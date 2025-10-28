@@ -1,220 +1,190 @@
-# CoachPro - Plateforme de Coaching Sportif
+# 🏋️ Synrgy - Plateforme de Coaching Sportif avec IA Ollama
 
-Une plateforme SaaS complète inspirée de TrueCoach pour la gestion de programmes d'entraînement, le suivi de clients et le coaching assisté par IA.
+## 🎯 Description
 
-## 🎯 Fonctionnalités
+Synrgy est une plateforme complète de coaching sportif qui utilise l'IA Ollama local pour générer des plans d'entraînement et nutritionnels personnalisés.
 
-### Pour les Coachs
-- **Dashboard complet** : Vue d'ensemble de l'activité avec statistiques
-- **Gestion des clients** : Ajout, suivi et suppression de clients
-- **Création de programmes** : Programmes d'entraînement personnalisés
-- **Abonnement Pro** : Débloquer des fonctionnalités avancées via Stripe
-- **Coach IA** : Assistant IA pour répondre aux questions des clients
+## ✨ Fonctionnalités
 
-### Pour les Clients
-- **Dashboard personnel** : Vue d'ensemble de la progression
-- **Programme d'entraînement** : Consultation des exercices assignés
-- **Coach IA** : Posez des questions sur l'entraînement et la nutrition
-- **Suivi de progression** : Visualisation des exercices complétés
+- 🤖 **IA Ollama intégrée** : Génération de plans avec llama3.2:1b
+- 🏃 **Plans d'entraînement** : Programmes personnalisés selon objectifs
+- 🥗 **Plans nutritionnels** : Régimes adaptés aux besoins
+- 👥 **Multi-rôles** : Coach et athlète avec dashboards dédiés
+- 📊 **Analytics** : Suivi des performances et progression
+- 🎨 **Interface moderne** : Design responsive avec Tailwind CSS
 
-### Technologies
-
-- **Frontend** : React 18 + Vite + TypeScript
-- **Backend** : Node.js + Express
-- **Base de données** : PostgreSQL + Drizzle ORM
-- **Authentification** : JWT avec bcrypt
-- **IA** : OpenAI GPT-5 via Replit AI Integrations
-- **Paiements** : Stripe
-- **UI** : TailwindCSS + shadcn/ui
-- **State Management** : TanStack Query
-
-## 🚀 Installation
+## 🚀 Installation et Démarrage
 
 ### Prérequis
+- Node.js 18+
+- Ollama installé
+- Modèle llama3.2:1b téléchargé
 
-- Node.js 20+
-- Accès à un compte Replit
-- Clés API Stripe (pour les paiements)
+### Installation
+```bash
+# Cloner le projet
+git clone https://github.com/ethan-plnqrt/synrgy-coachpro.git
+cd synrgy-coachpro
 
-### Variables d'environnement
+# Installer les dépendances
+npm install
 
-Les variables suivantes sont automatiquement configurées par Replit :
+# Démarrer Ollama
+ollama serve
 
+# Installer le modèle IA
+ollama pull llama3.2:1b
+
+# Démarrer le serveur
+npm run dev:server
+```
+
+### Démarrage automatique
+```bash
+# Script de démarrage complet
+./start-synrgy-ollama.sh
+```
+
+## 🔧 Configuration
+
+### Variables d'environnement (.env)
 ```env
-# Base de données (auto-configurée par Replit)
-DATABASE_URL=...
-PGHOST=...
-PGPORT=...
-PGUSER=...
-PGPASSWORD=...
-PGDATABASE=...
-
-# Authentication
-SESSION_SECRET=... (auto-généré par Replit)
-
-# Stripe (à configurer)
-VITE_STRIPE_PUBLIC_KEY=pk_... 
-STRIPE_SECRET_KEY=sk_...
-
-# OpenAI via Replit AI Integrations (auto-configuré)
-AI_INTEGRATIONS_OPENAI_BASE_URL=...
-AI_INTEGRATIONS_OPENAI_API_KEY=...
+AI_PROVIDER=ollama
+OLLAMA_API_URL=http://localhost:11434
+MODEL_NAME=llama3.2:1b
+DATABASE_URL=file:./dev.db
+SESSION_SECRET=your-secret-key
+TEST_MODE=false
 ```
 
-### Lancement du projet
+## 📡 API Endpoints
 
-1. **Cloner le projet sur Replit**
+### IA et Coaching
+- `POST /api/ask` - Chat général avec l'IA
+- `POST /api/nutrition/generate` - Génération de plans nutritionnels
+- `POST /api/trainingPlan/generate` - Génération de programmes d'entraînement
 
-2. **Configurer les secrets Stripe** :
-   - Allez sur https://dashboard.stripe.com/apikeys
-   - Copiez votre "Publishable key" → `VITE_STRIPE_PUBLIC_KEY`
-   - Copiez votre "Secret key" → `STRIPE_SECRET_KEY`
-
-3. **Initialiser la base de données** :
-   ```bash
-   npm run db:push
-   ```
-
-4. **Lancer l'application** :
-   ```bash
-   npm run dev
-   ```
-
-L'application sera accessible sur `http://localhost:5000`
-
-## 📖 Utilisation
-
-### Première connexion
-
-1. **Créer un compte Coach** :
-   - Cliquez sur "Inscription"
-   - Sélectionnez "Coach"
-   - Remplissez le formulaire
-
-2. **Ajouter des clients** :
-   - Connectez-vous comme coach
-   - Allez dans "Mes clients"
-   - Cliquez sur "Ajouter un client"
-
-3. **Créer un programme** :
-   - Allez dans "Programmes"
-   - Cliquez sur "Nouveau programme"
-   - Assignez-le à un client
-
-4. **Tester le Coach IA** :
-   - Allez dans "Coach IA" ou "Messages IA"
-   - Posez des questions sur l'entraînement
-
-### Upgrade vers Pro
-
-1. Connectez-vous comme coach
-2. Allez dans "Abonnement"
-3. Complétez le processus de paiement Stripe
-4. Profitez de toutes les fonctionnalités Pro !
-
-## 🏗️ Architecture
-
-### Structure du projet
-
-```
-/
-├── client/                 # Frontend React
-│   ├── src/
-│   │   ├── components/     # Composants réutilisables
-│   │   ├── pages/          # Pages de l'application
-│   │   ├── lib/            # Utilitaires (queryClient)
-│   │   └── App.tsx         # Point d'entrée
-│   └── index.html
-│
-├── server/                 # Backend Express
-│   ├── routes.ts          # Routes API
-│   ├── storage.ts         # Couche de persistance
-│   ├── db.ts              # Configuration DB
-│   └── openai.ts          # Intégration OpenAI
-│
-├── shared/                # Code partagé
-│   └── schema.ts          # Schémas de données
-│
-└── design_guidelines.md   # Guide de design
-```
-
-### API Routes
-
-#### Authentification
+### Authentification
 - `POST /api/auth/register` - Inscription
 - `POST /api/auth/login` - Connexion
-- `GET /api/auth/me` - Utilisateur courant
-- `POST /api/auth/logout` - Déconnexion
+- `GET /api/auth/me` - Profil utilisateur
 
-#### Clients
-- `GET /api/clients` - Liste des clients du coach
-- `POST /api/clients` - Créer un client
-- `DELETE /api/clients/:id` - Supprimer un client
-
-#### Programmes
+### Gestion des programmes
 - `GET /api/programs` - Liste des programmes
-- `GET /api/programs/my-programs` - Programmes du client
 - `POST /api/programs` - Créer un programme
 - `DELETE /api/programs/:id` - Supprimer un programme
 
-#### Exercices
-- `GET /api/exercises/:programId` - Exercices d'un programme
-- `POST /api/exercises` - Créer un exercice
-
-#### Messages IA
-- `GET /api/messages` - Historique des messages
-- `POST /api/messages` - Envoyer un message au coach IA
-
-#### Stripe
-- `POST /api/get-or-create-subscription` - Créer/récupérer un abonnement
-
-## 🎨 Design
-
-Le design suit les principes de **design_guidelines.md** :
-- Système de design cohérent avec shadcn/ui
-- Palette de couleurs professionnelle
-- Typography hiérarchisée (Inter + JetBrains Mono)
-- Espacement et layout consistants
-- Interactions subtiles et élégantes
-- Support dark mode automatique
-
-## 🔒 Sécurité
-
-- **Mots de passe** : Hachage avec bcrypt (10 rounds)
-- **Authentification** : JWT stocké en localStorage
-- **Sessions** : SECRET_KEY requis (auto-généré)
-- **Base de données** : Variables d'environnement sécurisées
-- **Stripe** : Clés séparées (publique/secrète)
-
 ## 🧪 Tests
 
-Pour tester manuellement l'application :
+### Test de l'intégration Ollama
+```bash
+npx tsx test-ollama-complete.js
+```
 
-1. **Créer un compte coach** et un compte client
-2. **Ajouter des clients** depuis le compte coach
-3. **Créer un programme** et l'assigner
-4. **Tester le chat IA** avec différentes questions
-5. **Essayer l'upgrade Pro** (mode test Stripe)
+### Test des endpoints
+```bash
+# Chat IA
+curl -X POST http://localhost:5000/api/ask \
+  -H "Content-Type: application/json" \
+  -d '{"content":"Bonjour, aide-moi avec mon entraînement"}'
 
-## 📦 Déploiement
+# Plan nutrition
+curl -X POST http://localhost:5000/api/nutrition/generate \
+  -H "Content-Type: application/json" \
+  -d '{"goal":"perte de poids","level":"débutant","weight":70,"height":175,"activity":"modérée","preferences":"végétarien"}'
+```
 
-L'application est prête pour le déploiement sur Replit :
+## 🏗️ Architecture
 
-1. Cliquez sur "Deploy" dans l'interface Replit
-2. L'application sera automatiquement déployée avec un domaine `.replit.app`
-3. Tous les secrets seront automatiquement inclus
+### Backend
+- **Express.js** : Serveur API
+- **TypeScript** : Langage principal
+- **SQLite** : Base de données locale
+- **Ollama** : IA locale
 
-## 🤝 Support
+### Frontend
+- **React 18** : Interface utilisateur
+- **Tailwind CSS** : Styling
+- **Radix UI** : Composants
+- **React Query** : Gestion d'état
+
+## 📁 Structure du Projet
+
+```
+synrgy-coachpro/
+├── client/                 # Frontend React
+│   ├── src/
+│   │   ├── components/     # Composants UI
+│   │   ├── pages/          # Pages de l'application
+│   │   ├── hooks/          # Hooks personnalisés
+│   │   └── lib/            # Utilitaires
+├── server/                 # Backend Express
+│   ├── ai/                 # Intégration Ollama
+│   ├── routes/             # Routes API
+│   └── storage.ts          # Gestion base de données
+├── shared/                 # Schémas partagés
+└── docs/                   # Documentation
+```
+
+## 🔄 Migration depuis OpenAI
+
+Le projet a été migré d'OpenAI vers Ollama local :
+
+- ✅ Dépendance OpenAI supprimée
+- ✅ Module Ollama créé (`/server/ai/ollama.ts`)
+- ✅ Routes adaptées pour Ollama
+- ✅ Configuration mise à jour
+- ✅ Tests validés
+
+## 🚨 Dépannage
+
+### Ollama non disponible
+```bash
+# Vérifier le service
+ollama serve
+
+# Vérifier les modèles
+ollama list
+
+# Installer le modèle
+ollama pull llama3.2:1b
+```
+
+### Port occupé
+```bash
+# Trouver le processus
+lsof -i :5000
+
+# Arrêter le processus
+kill -9 <PID>
+```
+
+## 📊 Performance
+
+- **Modèle IA** : llama3.2:1b (~1-2GB RAM)
+- **Temps de réponse** : 2-8 secondes
+- **Base de données** : SQLite local
+- **Ports** : 5000 (serveur), 11434 (Ollama)
+
+## 🤝 Contribution
+
+1. Fork le projet
+2. Créer une branche feature
+3. Commit les changements
+4. Push vers la branche
+5. Ouvrir une Pull Request
+
+## 📄 Licence
+
+MIT License - Voir le fichier LICENSE pour plus de détails.
+
+## 📞 Support
 
 Pour toute question ou problème :
-- Consultez la documentation Replit
-- Vérifiez que toutes les variables d'environnement sont configurées
-- Assurez-vous que la base de données est bien initialisée
-
-## 📝 Licence
-
-Ce projet est un exemple/template pour une plateforme de coaching sportif.
+- Ouvrir une issue sur GitHub
+- Consulter la documentation dans `/docs`
+- Vérifier les logs du serveur
 
 ---
 
-Développé avec ❤️ sur Replit
+**Développé avec ❤️ pour la communauté sportive**
