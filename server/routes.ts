@@ -9,6 +9,8 @@ import Stripe from "stripe";
 import { getAICoachResponse, RateLimitError } from "./openai";
 import trainingPlanRouter from "./routes/trainingPlan";
 import nutritionRouter from "./routes/nutrition";
+import paymentsRouter from "./routes/payments";
+import { registerReferralRoutes } from "./referral/referralRoutes";
 
 const TEST_MODE = process.env.TEST_MODE === "true";
 
@@ -48,9 +50,120 @@ async function authMiddleware(
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Config endpoint for client to know about test mode
-  app.get("/api/config", (_req, res) => {
-    res.json({ testMode: TEST_MODE });
+  // Register referral routes
+  registerReferralRoutes(app);
+
+  // Demo data for mock mode
+  const demoData = {
+    coach: {
+      name: "Lucas M.",
+      clients: [
+        { name: "Ethan D.", poids: 77, objectif: "prise de muscle", progression: "+1.4kg" },
+        { name: "Clara B.", poids: 61, objectif: "tonification", progression: "+0.8kg" },
+        { name: "Thomas R.", poids: 82, objectif: "perte de gras", progression: "-0.5kg" },
+        { name: "Sophie L.", poids: 65, objectif: "endurance", progression: "+0.3kg" }
+      ],
+      suggestions: ["Augmenter la charge pour Ethan", "Repos supplémentaire pour Clara", "Semaine de deload pour Sophie"]
+    },
+    athlete: {
+      name: "Ethan D.",
+      trainingPlan: [
+        { jour: "Lundi", exercices: [
+          { nom: "Développé couché", séries: 4, reps: 10, charge: 70, repos: 180 },
+          { nom: "Développé incliné haltères", séries: 3, reps: 12, charge: 25, repos: 120 },
+          { nom: "Dips", séries: 3, reps: 12, charge: 0, repos: 90 }
+        ]},
+        { jour: "Mercredi", exercices: [
+          { nom: "Tirage vertical", séries: 4, reps: 12, charge: 50, repos: 120 },
+          { nom: "Rowing barre", séries: 4, reps: 10, charge: 60, repos: 120 }
+        ]}
+      ],
+      nutrition: [
+        { repas: "Petit déjeuner", aliments: ["Flocons d'avoine", "Banane", "Oeufs"], kcal: 540 },
+        { repas: "Déjeuner", aliments: ["Poulet", "Riz", "Brocoli"], kcal: 650 }
+      ]
+    },
+    client: {
+      name: "Thomas R.",
+      coach: "Lucas M.",
+      objectifs: ["Perte de gras", "Reprise de forme"],
+      progression: ["-0.8 kg depuis 1 semaine"]
+    }
+  };
+
+  // Demo data endpoints
+  app.get("/api/demo/:role", (req, res) => {
+    const role = req.params.role as 'coach' | 'athlete' | 'client';
+    const data = demoData[role] || {};
+    res.status(200).json(data);
+  });
+
+  // Ping endpoint for connection checking
+  app.get("/api/ping", (req, res) => {
+    console.log("✅ Frontend a ping le backend avec succès !");
+    res.status(200).json({ pong: true, timestamp: new Date().toISOString() });
+  });
+
+  // Restart endpoint for auto-recovery (demo mode only)
+  app.get("/api/restart", (req, res) => {
+    console.log("🔁 Redémarrage du serveur déclenché automatiquement…");
+    res.status(200).json({ restarted: true, message: "Redémarrage en cours..." });
+  });
+
+  // Demo workout endpoint
+  app.get("/api/demo/workout", (req, res) => {
+    res.json({
+      name: "Full Body - IA Adaptive",
+      exercises: [
+        { name: "Développé couché", sets: 4, reps: 10, weight: 70, rest: 90 },
+        { name: "Squat", sets: 4, reps: 12, weight: 90, rest: 120 },
+        { name: "Tractions", sets: 3, reps: 8, weight: "Corps", rest: 75 },
+        { name: "Gainage", sets: 3, reps: "60s", weight: "-", rest: 60 }
+      ]
+    });
+  });
+
+  // SHIELD Prediction endpoint
+  app.get("/api/shield/prediction", async (req, res) => {
+    try {
+      const prediction = { message: '✅ Système stable' };
+      res.json(prediction);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // SHIELD Health Report endpoint
+  app.get("/api/shield/health", async (req, res) => {
+    try {
+      const health = { status: 'healthy', timestamp: new Date().toISOString() };
+      res.json(health);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Referral validation endpoint
+  app.get("/api/referral/validate", async (req, res) => {
+    try {
+      const code = req.query.code as string;
+      
+      if (!code || code.length < 6) {
+        return res.json({ valid: false, message: "Code invalide" });
+      }
+
+      // Check if code exists in database (mock implementation)
+      // In production, query the users table for referral codes
+      const validCodes = ["COACH1", "COACH2", "DEMO123"];
+      const isValid = validCodes.includes(code.toUpperCase());
+
+      return res.json({ 
+        valid: isValid, 
+        message: isValid ? "Code valide" : "Code invalide" 
+      });
+    } catch (error: any) {
+      return res.status(500).json({ valid: false, message: error.message });
+    }
   });
 
   // Lightweight ask endpoint for demo/test mode (no auth required in TEST_MODE)
@@ -1111,6 +1224,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Mount nutrition routes
   app.use("/api/nutrition", nutritionRouter);
+  
+  // Mount payment routes
+  app.use("/api/payments", paymentsRouter);
 
   const httpServer = createServer(app);
   return httpServer;

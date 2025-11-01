@@ -1,0 +1,41 @@
+{
+  "name": "Nutrition Adaptive Addon Check",
+  "version": "1.0",
+  "type": "diagnostic",
+  "description": "Vérifie que les IA Coach et Athlète appliquent correctement la logique des refeeds et diet breaks dans les plans nutritionnels générés.",
+  "checks": [
+    {
+      "id": "refeed_check",
+      "label": "Refeed Strategy Detection",
+      "criteria": [
+        "Présence du mot 'refeed' ou 'recharge glucidique'",
+        "Mention d'une durée de 1 à 2 jours",
+        "Ajustement calorique temporaire (+15 à +25%)",
+        "Retour au déficit après le refeed"
+      ],
+      "on_fail": "[Codex] Warning: Aucun refeed détecté dans le plan IA. Vérifie que la stratégie de recharge ponctuelle est intégrée."
+    },
+    {
+      "id": "dietbreak_check",
+      "label": "Diet Break Strategy Detection",
+      "criteria": [
+        "Présence du mot 'diet break' ou 'pause calorique'",
+        "Durée comprise entre 7 et 14 jours",
+        "Retour à la maintenance (TDEE)",
+        "Objectif de restauration hormonale ou métabolique"
+      ],
+      "on_fail": "[Codex] Warning: Aucun diet break détecté. Vérifie que la phase de maintenance métabolique est intégrée."
+    },
+    {
+      "id": "integration_check",
+      "label": "Integration with Coach & Athlete AI",
+      "criteria": [
+        "coachAdvisor.ts contient 'NutritionAdaptiveAddon'",
+        "athleteAdvisor.ts contient 'NutritionAdaptiveAddon'"
+      ],
+      "on_fail": "[Codex] Warning: NutritionAdaptiveAddon non importé dans Coach ou Athlete Advisor."
+    }
+  ],
+  "on_success": "[Codex] Nutrition Adaptive Addon fully operational. Refeeds & Diet Breaks logic detected and functional."
+}
+

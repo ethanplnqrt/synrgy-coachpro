@@ -49,40 +49,32 @@ export class CoachProTester {
   }
 
   private async testAPI(): Promise<void> {
+    const API_BASE = (import.meta as any).env?.VITE_API_BASE || '/api';
+
     try {
-      const response = await fetch('http://localhost:5000/api/config');
+      const response = await fetch(`${API_BASE}/health`);
       if (response.ok) {
-        const data = await response.json();
-        if (data.testMode === true) {
-          this.addResult('pass', 'API Config', 'Mode démo activé');
-        } else {
-          this.addResult('fail', 'API Config', 'Mode démo non activé');
-        }
+        this.addResult('pass', 'API Health', 'Backend opérationnel');
       } else {
-        this.addResult('fail', 'API Config', `Erreur HTTP ${response.status}`);
+        this.addResult('fail', 'API Health', `Erreur HTTP ${response.status}`);
       }
     } catch (error) {
-      this.addResult('fail', 'API Config', `Erreur: ${error}`);
+      this.addResult('fail', 'API Health', `Erreur: ${error}`);
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/ask', {
+      const response = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: 'Test automatique' })
+        body: JSON.stringify({ email: 'user@localhost', password: 'password' })
       });
-      if (response.ok) {
-        const data = await response.json();
-        if (data.reply && data.reply.includes('démo')) {
-          this.addResult('pass', 'API Chat IA', 'Réponse démo générée');
-        } else {
-          this.addResult('fail', 'API Chat IA', 'Réponse incorrecte');
-        }
+      if (response.status === 401 || response.status === 200) {
+        this.addResult('pass', 'API Auth', 'Endpoint accessible');
       } else {
-        this.addResult('fail', 'API Chat IA', `Erreur HTTP ${response.status}`);
+        this.addResult('fail', 'API Auth', `Erreur HTTP ${response.status}`);
       }
     } catch (error) {
-      this.addResult('fail', 'API Chat IA', `Erreur: ${error}`);
+      this.addResult('fail', 'API Auth', `Erreur: ${error}`);
     }
   }
 

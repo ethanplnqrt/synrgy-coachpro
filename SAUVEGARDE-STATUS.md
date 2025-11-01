@@ -91,3 +91,6 @@ synrgy-coachpro/
 **💾 Sauvegarde Synrgy terminée avec succès**
 **📁 Fichiers commités et prêts pour GitHub**
 **🚀 Projet propre et prêt à être rouvert plus tard**
+
+
+

@@ -1,4 +1,5 @@
 import express, { type Request, type Response } from "express";
+import { buildPrompt } from "../../coreAI/aiAdvisor";
 import { queryOllama } from "../ai/ollama";
 
 const router = express.Router();
@@ -64,7 +65,7 @@ router.post("/generate", async (req: Request, res: Response) => {
     - chaque exercice: name, series, reps, weight (nombre ou "poids du corps"), rest (secondes)
     - progression: règle de progression hebdomadaire`;
 
-    const llmResponse = await queryOllama(prompt);
+    const llmResponse = await queryOllama(buildPrompt(prompt));
     
     // Essayer de parser la réponse JSON, sinon retourner un plan par défaut
     try {

@@ -8,12 +8,20 @@ export default function Header({ demoBanner }: { demoBanner?: boolean }) {
   const { themeName, toggleTheme, theme } = useTheme();
   const [, setLocation] = useLocation();
 
+  // Fallbacks sécurisés si theme ou colors sont undefined
+  const backgroundColor = theme?.colors?.background || "#0B1220";
+  const borderColor = theme?.colors?.muted || "#1F2937";
+  const textColor = theme?.colors?.foreground || "#E5E7EB";
+  const secondaryColor = theme?.colors?.secondary || "#4ADE80";
+  const primaryColor = theme?.colors?.primary || "#FF6B3D";
+  const warningColor = theme?.colors?.warning || "#F59E0B";
+
   return (
     <header 
       className="fixed top-0 inset-x-0 z-40 backdrop-blur border-b"
       style={{ 
-        backgroundColor: `${theme.colors.background}80`,
-        borderColor: theme.colors.muted
+        backgroundColor: `${backgroundColor}80`,
+        borderColor: borderColor
       }}
     >
       <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
@@ -28,7 +36,7 @@ export default function Header({ demoBanner }: { demoBanner?: boolean }) {
           />
           <span 
             className="ml-2 text-sm font-medium italic opacity-80 logo-tagline"
-            style={{ color: theme.colors.secondary }}
+            style={{ color: secondaryColor }}
           >
             Hybrid Energy
           </span>
@@ -37,7 +45,7 @@ export default function Header({ demoBanner }: { demoBanner?: boolean }) {
           <Link 
             href="/demo"
             className="text-sm hover:text-foreground transition-colors"
-            style={{ color: theme.colors.muted }}
+            style={{ color: borderColor }}
           >
             Démo
           </Link>
@@ -46,7 +54,7 @@ export default function Header({ demoBanner }: { demoBanner?: boolean }) {
             size="sm"
             onClick={toggleTheme}
             className="hover-scale"
-            style={{ color: theme.colors.primary }}
+            style={{ color: primaryColor }}
           >
             {themeName === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
           </Button>
@@ -56,8 +64,8 @@ export default function Header({ demoBanner }: { demoBanner?: boolean }) {
               size="sm"
               className="hover-scale"
               style={{ 
-                borderColor: theme.colors.secondary,
-                color: theme.colors.secondary
+                borderColor: secondaryColor,
+                color: secondaryColor
               }}
             >
               Connexion
@@ -69,8 +77,8 @@ export default function Header({ demoBanner }: { demoBanner?: boolean }) {
         <div 
           className="text-center text-xs py-1"
           style={{ 
-            backgroundColor: `${theme.colors.warning}20`,
-            color: theme.colors.foreground
+            backgroundColor: `${warningColor}20`,
+            color: textColor
           }}
         >
           Mode démo — données fictives

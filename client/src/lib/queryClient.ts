@@ -48,13 +48,11 @@ export async function apiRequest(
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchInterval: false,
+      retry: 3,
+      retryDelay: i => Math.min(500 * 2 ** i, 4000),
+      staleTime: 15_000,
       refetchOnWindowFocus: false,
-      staleTime: Infinity,
-      retry: false,
-    },
-    mutations: {
-      retry: false,
+      refetchOnReconnect: true,
     },
   },
 });

@@ -1,4 +1,5 @@
 import React from "react";
+import { toast } from "react-hot-toast";
 
 type Props = { children: React.ReactNode };
 type State = { hasError: boolean; error?: any };
@@ -15,6 +16,7 @@ export default class ErrorBoundary extends React.Component<Props, State> {
 
   componentDidCatch(error: any, info: any) {
     console.error("UI ErrorBoundary caught:", error, info);
+    toast.error(`Erreur UI: ${error?.message || 'Erreur inconnue'}`);
   }
 
   render() {

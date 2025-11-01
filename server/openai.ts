@@ -1,14 +1,17 @@
+import { buildPrompt } from "../coreAI/aiAdvisor";
 import { queryOllama } from "./ai/ollama";
 
-export async function askOpenAI(prompt: string) {
+export async function askOpenAI(userPrompt: string) {
+  const context = buildPrompt(userPrompt);
+
   if (process.env.TEST_MODE === "true") {
     console.log("💡 Mode démo IA activé");
-    return "💬 Réponse IA démo : " + prompt;
+    return "💬 Réponse IA démo : " + userPrompt;
   }
 
   // Utiliser Ollama au lieu d'OpenAI
   console.log("✅ Synrgy connecté à Ollama (modèle llama3.2:1b)");
-  return await queryOllama(prompt);
+  return await queryOllama(context);
 }
 
 // Legacy function for compatibility

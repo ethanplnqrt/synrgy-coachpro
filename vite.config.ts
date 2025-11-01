@@ -1,7 +1,7 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import path from 'path';
-import { fileURLToPath, URL } from 'node:url';
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import path from 'path'
+import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
   plugins: [react()],
@@ -18,15 +18,19 @@ export default defineConfig({
     } 
   },
   server: { 
-    port: 5173, 
+    port: 5173,
     open: true,
-    strictPort: false,
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: 'http://localhost:5001',
         changeOrigin: true,
         secure: false,
       },
+      '/config': {
+        target: 'http://localhost:5001',
+        changeOrigin: true,
+        secure: false,
+      }
     }
   }
 });

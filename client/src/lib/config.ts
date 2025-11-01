@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import type { User } from "../../shared/schema";
+import { API_BASE } from "./api";
 
 export interface AppConfig {
   testMode: boolean;
@@ -10,7 +11,7 @@ export function useAppConfig() {
     queryKey: ["app-config"],
     queryFn: async () => {
       try {
-        const res = await fetch("/api/config", { credentials: "include" });
+        const res = await fetch(`${API_BASE}/config`, { credentials: "include" });
         if (!res.ok) throw new Error("failed");
         return (await res.json()) as AppConfig;
       } catch {

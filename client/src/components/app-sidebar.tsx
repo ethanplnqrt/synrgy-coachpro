@@ -1,4 +1,4 @@
-import { Home, Users, Calendar, MessageSquare, Settings, CreditCard, LogOut, Dumbbell } from "lucide-react";
+import { Home, Users, Calendar, MessageSquare, Settings, CreditCard, LogOut, Dumbbell, Clock, Heart, Zap, Brain, Target, Utensils, Camera, TrendingUp } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -19,18 +19,38 @@ import type { User } from "@shared/schema";
 import { apiRequest, queryClient, removeAuthToken } from "@/lib/queryClient";
 
 const coachMenuItems = [
-  { title: "Tableau de bord", url: "/coach/dashboard", icon: Home },
+  { title: "Dashboard", url: "/dashboard/coach", icon: Home },
   { title: "Mes clients", url: "/coach/clients", icon: Users },
-  { title: "Programmes", url: "/coach/programs", icon: Calendar },
-  { title: "Messages IA", url: "/coach/messages", icon: MessageSquare },
+  { title: "Invitations", url: "/dashboard/coach/referrals", icon: MessageSquare },
+  { title: "TrueCoach", url: "/truecoach", icon: Brain },
+  { title: "Planning", url: "/cal", icon: Calendar },
+  { title: "Nutrition", url: "/macros", icon: Utensils },
+  { title: "Entraînement", url: "/heavy-strong", icon: Dumbbell },
+  { title: "Check-ins", url: "/checkins", icon: Heart },
   { title: "Abonnement", url: "/coach/subscription", icon: CreditCard },
   { title: "Paramètres", url: "/coach/settings", icon: Settings },
 ];
 
+const athleteMenuItems = [
+  { title: "Dashboard", url: "/dashboard/athlete", icon: Home },
+  { title: "🏋️ Programme", url: "/dashboard/athlete/training", icon: Dumbbell },
+  { title: "🔥 Training Actif", url: "/training-session-active", icon: Zap },
+  { title: "🥗 Nutrition", url: "/dashboard/athlete/nutrition", icon: Utensils },
+  { title: "📊 Journal", url: "/journal", icon: TrendingUp },
+  { title: "📸 Progression", url: "/progress-photos", icon: Camera },
+  { title: "🤖 Assistant IA", url: "/dashboard/athlete/ai", icon: Brain },
+  { title: "Check-ins", url: "/checkins", icon: Heart },
+  { title: "Paramètres", url: "/client/settings", icon: Settings },
+];
+
 const clientMenuItems = [
-  { title: "Tableau de bord", url: "/client/dashboard", icon: Home },
-  { title: "Mon programme", url: "/client/program", icon: Calendar },
-  { title: "Coach IA", url: "/client/ai-coach", icon: MessageSquare },
+  { title: "Dashboard", url: "/dashboard/client", icon: Home },
+  { title: "Chat Coach", url: "/dashboard/client/chat", icon: MessageSquare },
+  { title: "Entraînement", url: "/dashboard/client/training", icon: Dumbbell },
+  { title: "Nutrition", url: "/dashboard/client/nutrition", icon: Utensils },
+  { title: "Progression", url: "/dashboard/client/progress", icon: TrendingUp },
+  { title: "Parrainer", url: "/dashboard/client/referrals", icon: Heart },
+  { title: "Photos", url: "/progress-photos", icon: Camera },
   { title: "Paramètres", url: "/client/settings", icon: Settings },
 ];
 
@@ -52,7 +72,11 @@ export function AppSidebar() {
     },
   });
 
-  const menuItems = user?.role === "coach" ? coachMenuItems : clientMenuItems;
+  const menuItems = user?.role === "coach" 
+    ? coachMenuItems 
+    : user?.isClient === true 
+    ? clientMenuItems 
+    : athleteMenuItems;
 
   const getInitials = (name: string) => {
     return name

@@ -57,3 +57,6 @@ echo "📖 Consultez le rapport de construction: build-report.md"
 echo ""
 echo "🎯 Ouvrez http://localhost:5173 dans votre navigateur pour commencer !"
 
+
+
+
