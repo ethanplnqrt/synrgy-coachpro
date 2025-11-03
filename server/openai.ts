@@ -1,27 +1,21 @@
-import { buildPrompt } from "../coreAI/aiAdvisor";
-import { queryOllama } from "./ai/ollama";
+import axios from "axios";
 
-export async function askOpenAI(userPrompt: string) {
-  const context = buildPrompt(userPrompt);
+export async function generateAIResponse(prompt: string): Promise<string> {
+  try {
+    const response = await axios.post("https://api.openai.com/v1/chat/completions", {
+      model: "gpt-4o-mini",
+      messages: [{ role: "user", content: prompt }]
+    }, {
+      headers: {
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Content-Type": "application/json"
+      }
+    });
 
-  if (process.env.TEST_MODE === "true") {
-    console.log("💡 Mode démo IA activé");
-    return "💬 Réponse IA démo : " + userPrompt;
-  }
-
-  // Utiliser Ollama au lieu d'OpenAI
-  console.log("✅ Synrgy connecté à Ollama (modèle llama3.2:1b)");
-  return await queryOllama(context);
-}
-
-// Legacy function for compatibility
-export async function getAICoachResponse(userMessage: string, userId?: string): Promise<string> {
-  return await askOpenAI(userMessage);
-}
-
-export class RateLimitError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "RateLimitError";
+    return response.data.choices[0]?.message?.content || "Je n'ai pas pu générer de réponse.";
+  } catch (err) {
+    console.error("Erreur IA:", err);
+    return "Erreur serveur IA.";
   }
 }
+

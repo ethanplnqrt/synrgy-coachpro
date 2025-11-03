@@ -15,6 +15,7 @@ export async function apiGet<T = any>(path: string, init?: RequestInit): Promise
 
   try {
     const res = await fetch(`${API_BASE}${path}`, {
+      credentials: "include",
       ...init,
       signal: controller.signal
     });
@@ -41,6 +42,7 @@ export async function apiPost<T = any>(path: string, body: any, init?: RequestIn
         ...(init?.headers || {})
       },
       body: JSON.stringify(body),
+      credentials: "include",
       ...init,
       signal: controller.signal
     });
@@ -60,6 +62,7 @@ export async function apiPut<T = any>(path: string, body: any, init?: RequestIni
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) },
     body: JSON.stringify(body),
+    credentials: "include",
     ...init
   });
   return handleResponse<T>(res);
@@ -68,6 +71,7 @@ export async function apiPut<T = any>(path: string, body: any, init?: RequestIni
 export async function apiDelete<T = any>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
     method: 'DELETE',
+    credentials: "include",
     ...init
   });
   return handleResponse<T>(res);

@@ -52,7 +52,7 @@ export default function TrainingPage() {
       const data = await res.json();
       setTrainingPlan(data);
     } catch (e) {
-      // Fallback demo plan
+      // Fallback plan
       setTrainingPlan({
         week: 1,
         days: [

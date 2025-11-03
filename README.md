@@ -1,190 +1,223 @@
-# 🏋️ Synrgy - Plateforme de Coaching Sportif avec IA Ollama
 
-## 🎯 Description
+# Synrgy - AI-Powered Coaching Platform
 
-Synrgy est une plateforme complète de coaching sportif qui utilise l'IA Ollama local pour générer des plans d'entraînement et nutritionnels personnalisés.
+Plateforme complète de coaching avec intelligence artificielle pour coaches et athlètes.
 
-## ✨ Fonctionnalités
-
-- 🤖 **IA Ollama intégrée** : Génération de plans avec llama3.2:1b
-- 🏃 **Plans d'entraînement** : Programmes personnalisés selon objectifs
-- 🥗 **Plans nutritionnels** : Régimes adaptés aux besoins
-- 👥 **Multi-rôles** : Coach et athlète avec dashboards dédiés
-- 📊 **Analytics** : Suivi des performances et progression
-- 🎨 **Interface moderne** : Design responsive avec Tailwind CSS
-
-## 🚀 Installation et Démarrage
-
-### Prérequis
-- Node.js 18+
-- Ollama installé
-- Modèle llama3.2:1b téléchargé
+## 🚀 Démarrage rapide
 
 ### Installation
-```bash
-# Cloner le projet
-git clone https://github.com/ethan-plnqrt/synrgy-coachpro.git
-cd synrgy-coachpro
 
-# Installer les dépendances
+```bash
 npm install
+```
 
-# Démarrer Ollama
-ollama serve
+### Configuration
 
-# Installer le modèle IA
-ollama pull llama3.2:1b
+Crée un fichier `.env` à la racine :
+```bash
+# Database
+DATABASE_URL=./dev.db
 
-# Démarrer le serveur
+# Server
+PORT=5001
+NODE_ENV=development
+
+# JWT Secret (change en production)
+JWT_SECRET=your-secret-key-change-in-production
+
+# OpenAI API
+OPENAI_API_KEY=sk-your-openai-api-key-here
+```
+
+### Développement
+
+```bash
+# Terminal 1 - Serveur backend
 npm run dev:server
+
+# Terminal 2 - Client frontend (dans un autre terminal)
+npm run dev:client
 ```
 
-### Démarrage automatique
+- **Backend** : http://localhost:5001
+- **Frontend** : http://localhost:5173
+
+### Production
+
 ```bash
-# Script de démarrage complet
-./start-synrgy-ollama.sh
+# Build complet (React + Serveur)
+npm run build
+
+# Démarrer l'application
+npm start
 ```
 
-## 🔧 Configuration
+**L'application complète sera accessible sur http://localhost:5001**
 
-### Variables d'environnement (.env)
-```env
-AI_PROVIDER=ollama
-OLLAMA_API_URL=http://localhost:11434
-MODEL_NAME=llama3.2:1b
-DATABASE_URL=file:./dev.db
-SESSION_SECRET=your-secret-key
-TEST_MODE=false
-```
+### Parcours utilisateur
 
-## 📡 API Endpoints
+1. **Visite** http://localhost:5001 → Landing page
+2. **Pricing** → Voir les formules
+3. **S'inscrire** → Choisir son rôle (Coach/Client/Athlète)
+4. **Dashboard** → Interface personnalisée selon le rôle
 
-### IA et Coaching
-- `POST /api/ask` - Chat général avec l'IA
-- `POST /api/nutrition/generate` - Génération de plans nutritionnels
-- `POST /api/trainingPlan/generate` - Génération de programmes d'entraînement
-
-### Authentification
-- `POST /api/auth/register` - Inscription
-- `POST /api/auth/login` - Connexion
-- `GET /api/auth/me` - Profil utilisateur
-
-### Gestion des programmes
-- `GET /api/programs` - Liste des programmes
-- `POST /api/programs` - Créer un programme
-- `DELETE /api/programs/:id` - Supprimer un programme
-
-## 🧪 Tests
-
-### Test de l'intégration Ollama
-```bash
-npx tsx test-ollama-complete.js
-```
-
-### Test des endpoints
-```bash
-# Chat IA
-curl -X POST http://localhost:5000/api/ask \
-  -H "Content-Type: application/json" \
-  -d '{"content":"Bonjour, aide-moi avec mon entraînement"}'
-
-# Plan nutrition
-curl -X POST http://localhost:5000/api/nutrition/generate \
-  -H "Content-Type: application/json" \
-  -d '{"goal":"perte de poids","level":"débutant","weight":70,"height":175,"activity":"modérée","preferences":"végétarien"}'
-```
-
-## 🏗️ Architecture
-
-### Backend
-- **Express.js** : Serveur API
-- **TypeScript** : Langage principal
-- **SQLite** : Base de données locale
-- **Ollama** : IA locale
-
-### Frontend
-- **React 18** : Interface utilisateur
-- **Tailwind CSS** : Styling
-- **Radix UI** : Composants
-- **React Query** : Gestion d'état
-
-## 📁 Structure du Projet
+## 📁 Structure
 
 ```
-synrgy-coachpro/
-├── client/                 # Frontend React
+synrgy/
+├── client/          # Application React (Vite)
 │   ├── src/
-│   │   ├── components/     # Composants UI
-│   │   ├── pages/          # Pages de l'application
-│   │   ├── hooks/          # Hooks personnalisés
-│   │   └── lib/            # Utilitaires
-├── server/                 # Backend Express
-│   ├── ai/                 # Intégration Ollama
-│   ├── routes/             # Routes API
-│   └── storage.ts          # Gestion base de données
-├── shared/                 # Schémas partagés
-└── docs/                   # Documentation
+│   │   ├── components/  # Composants UI
+│   │   ├── contexts/    # AuthContext
+│   │   ├── hooks/       # useAuth
+│   │   ├── pages/
+│   │   │   ├── coach/     # Pages COACH
+│   │   │   ├── client/    # Pages CLIENT
+│   │   │   ├── athlete/   # Pages ATHLETE
+│   │   │   └── [shared]   # Pages partagées
+│   │   └── lib/         # API, queryClient
+│   └── index.html
+│
+├── server/          # Express API
+│   ├── auth/        # Authentification (JWT)
+│   │   ├── authController.ts
+│   │   ├── authMiddleware.ts
+│   │   ├── authRoutes.ts
+│   │   ├── authToken.ts
+│   │   └── userStore.ts
+│   ├── ai/          # Système de prompts IA
+│   │   └── promptBuilder.ts
+│   ├── routes/      # API routes
+│   ├── data/        # Stockage JSON
+│   │   └── users.json
+│   ├── utils/       # Utilitaires
+│   ├── db.json      # Messages, nutrition, goals
+│   ├── openai.ts    # Interface OpenAI
+│   └── index.ts     # Server principal
+│
+├── coreAI/          # Logique IA (advisors, doctrine)
+├── shared/          # Schémas et types partagés
+└── migrations/      # Migrations DB
 ```
 
-## 🔄 Migration depuis OpenAI
+## 🔐 Authentification
 
-Le projet a été migré d'OpenAI vers Ollama local :
+Le système utilise JWT avec cookies httpOnly pour une sécurité maximale.
 
-- ✅ Dépendance OpenAI supprimée
-- ✅ Module Ollama créé (`/server/ai/ollama.ts`)
-- ✅ Routes adaptées pour Ollama
-- ✅ Configuration mise à jour
-- ✅ Tests validés
+### 3 rôles utilisateurs
 
-## 🚨 Dépannage
+1. **Coach professionnel** - Gère des clients et crée des programmes
+2. **Client** - Athlète accompagné par un coach
+3. **Athlète indépendant** - Utilise l'IA comme coach virtuel
 
-### Ollama non disponible
+### Routes d'authentification
+- `POST /api/auth/register` - Inscription (coach, client ou athlete)
+- `POST /api/auth/login` - Connexion
+- `POST /api/auth/logout` - Déconnexion
+- `GET /api/auth/me` - Vérifier la session
+
+### Exemple d'inscription
 ```bash
-# Vérifier le service
-ollama serve
+# Coach
+curl -X POST http://localhost:5001/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"coach@example.com","password":"password123","role":"coach"}'
 
-# Vérifier les modèles
-ollama list
+# Client
+curl -X POST http://localhost:5001/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"client@example.com","password":"password123","role":"client"}'
 
-# Installer le modèle
-ollama pull llama3.2:1b
+# Athlète
+curl -X POST http://localhost:5001/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"athlete@example.com","password":"password123","role":"athlete"}'
 ```
 
-### Port occupé
-```bash
-# Trouver le processus
-lsof -i :5000
+### Redirection automatique
+Après connexion, l'utilisateur est redirigé vers son espace :
+- Coach → `/coach/dashboard`
+- Client → `/client/dashboard`
+- Athlète → `/athlete/dashboard`
 
-# Arrêter le processus
-kill -9 <PID>
+### Routes protégées
+Toutes les routes suivantes nécessitent une authentification :
+- `/api/chat` - Chat avec l'IA
+- `/api/nutrition` - Gestion nutrition
+- `/api/goals` - Gestion objectifs
+
+## 🗄️ Base de données
+
+Les utilisateurs sont stockés dans `server/data/users.json` avec bcrypt pour les mots de passe.
+
+Structure d'un utilisateur :
+```json
+{
+  "id": "uuid",
+  "email": "user@example.com",
+  "passwordHash": "bcrypt-hash",
+  "role": "coach|athlete",
+  "createdAt": 1234567890
+}
 ```
 
-## 📊 Performance
+## 🤖 Intelligence Artificielle
 
-- **Modèle IA** : llama3.2:1b (~1-2GB RAM)
-- **Temps de réponse** : 2-8 secondes
-- **Base de données** : SQLite local
-- **Ports** : 5000 (serveur), 11434 (Ollama)
+### Chat IA personnalisé
 
-## 🤝 Contribution
+Synrgy utilise OpenAI GPT-4o-mini avec des prompts intelligents personnalisés selon le rôle :
 
-1. Fork le projet
-2. Créer une branche feature
-3. Commit les changements
-4. Push vers la branche
-5. Ouvrir une Pull Request
+**Pour les coaches** : Assistant expert en programmation, gestion d'athlètes et performance
+**Pour les athlètes** : Coach personnel motivant, empathique et pédagogue
 
-## 📄 Licence
+Le système :
+- Maintient un historique de conversation par utilisateur
+- Adapte le ton et le contenu selon le profil
+- Garde le contexte des 10 derniers messages
+- Stocke toutes les conversations de manière persistante
 
-MIT License - Voir le fichier LICENSE pour plus de détails.
+Configure ta clé API dans `.env` :
+```
+OPENAI_API_KEY=sk-your-key-here
+```
 
-## 📞 Support
+### Routes Chat & IA
+- `POST /api/chat` - Chat conversationnel avec historique
+- `GET /api/chat/history` - Récupérer l'historique complet
+- `DELETE /api/chat/history` - Supprimer l'historique
+- `POST /api/codex` - Query Codex pour génération (plans, conseils, analyses)
+- `GET /api/codex/status` - Status de configuration Codex
 
-Pour toute question ou problème :
-- Ouvrir une issue sur GitHub
-- Consulter la documentation dans `/docs`
-- Vérifier les logs du serveur
+## 🛠️ Technologies
 
----
+- **Frontend**: React 18, Vite, TanStack Query, Wouter, Tailwind CSS
+- **Backend**: Express, TypeScript, JWT, bcrypt
+- **Database**: JSON file storage
+- **Auth**: JWT + httpOnly cookies (7 jours)
+- **AI**: OpenAI GPT-4o-mini
+- **UI**: Radix UI + shadcn/ui
 
-**Développé avec ❤️ pour la communauté sportive**
+## 📝 Scripts
+
+- `npm run dev:server` - Lancer le serveur de développement (port 5001)
+- `npm run dev:client` - Lancer le client de développement (port 5173)
+- `npm run build` - Build pour production ✅ TESTÉ ET FONCTIONNEL
+- `npm start` - Lancer l'application en production (port 5001)
+
+## 🧪 Tester l'authentification
+
+1. Inscris-toi via le frontend : http://localhost:5173/login
+2. Choisis ton rôle :
+   - **Coach professionnel** → Gestion de clients
+   - **Client (avec coach)** → Programme assigné par coach
+   - **Athlète indépendant** → Autonome avec IA
+3. Tu es automatiquement redirigé vers ton dashboard
+4. Navigation adaptée à ton rôle dans la sidebar
+
+## 🔒 Sécurité
+
+- Mots de passe hashés avec bcrypt (10 rounds)
+- JWT stockés dans des cookies httpOnly
+- CORS configuré pour localhost:5173
+- Tokens expiration : 7 jours
+- Middleware d'authentification sur toutes les routes protégées

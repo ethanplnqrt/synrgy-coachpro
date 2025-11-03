@@ -1,36 +1,35 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import path from 'path'
-import { fileURLToPath, URL } from 'node:url'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import path from "path";
+import { fileURLToPath } from "node:url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const rootDir = path.resolve(__dirname, "client");
+const distDir = path.resolve(__dirname, "dist");
 
 export default defineConfig({
+  root: rootDir,
   plugins: [react()],
-  root: './client',
-  build: { 
-    outDir: '../dist',
+  build: {
+    outDir: distDir,
     emptyOutDir: true,
-    sourcemap: process.env.NODE_ENV !== 'production'
+    sourcemap: process.env.NODE_ENV !== "production",
   },
-  resolve: { 
-    alias: { 
-      '@': path.resolve(path.dirname(fileURLToPath(import.meta.url)), './client/src'),
-      '@shared': path.resolve(path.dirname(fileURLToPath(import.meta.url)), './shared')
-    } 
+  resolve: {
+    alias: {
+      "@": path.resolve(rootDir, "src"),
+      "@shared": path.resolve(__dirname, "shared"),
+    },
   },
-  server: { 
+  server: {
     port: 5173,
-    open: true,
     proxy: {
-      '/api': {
-        target: 'http://localhost:5001',
+      "/api": {
+        target: "http://localhost:5001",
         changeOrigin: true,
         secure: false,
       },
-      '/config': {
-        target: 'http://localhost:5001',
-        changeOrigin: true,
-        secure: false,
-      }
-    }
-  }
+    },
+  },
 });

@@ -57,7 +57,7 @@ export default function NutritionPage() {
       const data = await res.json();
       setNutritionPlan(data);
     } catch (e) {
-      // Fallback demo plan
+      // Fallback plan
       setNutritionPlan({
         meals: [
           {

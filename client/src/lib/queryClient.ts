@@ -7,32 +7,12 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
-// Get JWT token from localStorage
-function getAuthToken(): string | null {
-  return localStorage.getItem("auth_token");
-}
-
-// Set JWT token in localStorage
-export function setAuthToken(token: string) {
-  localStorage.setItem("auth_token", token);
-}
-
-// Remove JWT token from localStorage
-export function removeAuthToken() {
-  localStorage.removeItem("auth_token");
-}
-
 export async function apiRequest(
   method: string,
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  const token = getAuthToken();
   const headers: Record<string, string> = data ? { "Content-Type": "application/json" } : {};
-  
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
 
   const res = await fetch(url, {
     method,
@@ -43,6 +23,15 @@ export async function apiRequest(
 
   await throwIfResNotOk(res);
   return res;
+}
+
+/**
+ * Removes auth token - kept for compatibility but auth is now cookie-based
+ */
+export function removeAuthToken() {
+  // Auth is now handled via httpOnly cookies
+  // This function is kept for backward compatibility
+  queryClient.clear();
 }
 
 export const queryClient = new QueryClient({

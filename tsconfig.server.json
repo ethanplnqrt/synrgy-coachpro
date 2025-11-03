@@ -1,15 +1,17 @@
 {
-  "extends": "./tsconfig.json",
   "compilerOptions": {
-    "outDir": "./dist/server",
-    "rootDir": "./server",
-    "noEmit": false,
-    "module": "ESNext",
-    "moduleResolution": "bundler",
     "target": "ES2020",
-    "emitDecoratorMetadata": false,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "rootDir": ".",
+    "outDir": "dist/server",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": false,
+    "skipLibCheck": true,
+    "noEmit": false,
     "declaration": false
   },
-  "include": ["server/**/*.ts"]
+  "include": ["server/**/*.ts", "shared/**/*.ts"],
+  "exclude": ["node_modules", "dist", "client", "coreAI"]
 }
-

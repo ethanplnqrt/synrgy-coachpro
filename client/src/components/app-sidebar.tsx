@@ -1,4 +1,4 @@
-import { Home, Users, Calendar, MessageSquare, Settings, CreditCard, LogOut, Dumbbell, Clock, Heart, Zap, Brain, Target, Utensils, Camera, TrendingUp } from "lucide-react";
+import { Home, Users, Calendar, MessageSquare, Settings, CreditCard, LogOut, Dumbbell, Clock, Heart, Zap, Brain, Target, Utensils, Camera, TrendingUp, CheckCircle } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -13,72 +13,62 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import type { User } from "@shared/schema";
-import { apiRequest, queryClient, removeAuthToken } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/useAuth";
 
 const coachMenuItems = [
-  { title: "Dashboard", url: "/dashboard/coach", icon: Home },
+  { title: "Dashboard", url: "/coach/dashboard", icon: Home },
   { title: "Mes clients", url: "/coach/clients", icon: Users },
-  { title: "Invitations", url: "/dashboard/coach/referrals", icon: MessageSquare },
-  { title: "TrueCoach", url: "/truecoach", icon: Brain },
-  { title: "Planning", url: "/cal", icon: Calendar },
-  { title: "Nutrition", url: "/macros", icon: Utensils },
-  { title: "Entraînement", url: "/heavy-strong", icon: Dumbbell },
-  { title: "Check-ins", url: "/checkins", icon: Heart },
+  { title: "Programmes", url: "/coach/programs", icon: Dumbbell },
+  { title: "Check-ins clients", url: "/coach/checkins", icon: CheckCircle },
+  { title: "Analytics", url: "/coach/analytics", icon: TrendingUp },
+  { title: "Invitations", url: "/coach/referrals", icon: MessageSquare },
   { title: "Abonnement", url: "/coach/subscription", icon: CreditCard },
   { title: "Paramètres", url: "/coach/settings", icon: Settings },
 ];
 
-const athleteMenuItems = [
-  { title: "Dashboard", url: "/dashboard/athlete", icon: Home },
-  { title: "🏋️ Programme", url: "/dashboard/athlete/training", icon: Dumbbell },
-  { title: "🔥 Training Actif", url: "/training-session-active", icon: Zap },
-  { title: "🥗 Nutrition", url: "/dashboard/athlete/nutrition", icon: Utensils },
-  { title: "📊 Journal", url: "/journal", icon: TrendingUp },
-  { title: "📸 Progression", url: "/progress-photos", icon: Camera },
-  { title: "🤖 Assistant IA", url: "/dashboard/athlete/ai", icon: Brain },
-  { title: "Check-ins", url: "/checkins", icon: Heart },
+const clientMenuItems = [
+  { title: "Dashboard", url: "/client/dashboard", icon: Home },
+  { title: "Chat Coach", url: "/client/chat", icon: MessageSquare },
+  { title: "Entraînement", url: "/client/training", icon: Dumbbell },
+  { title: "Nutrition", url: "/client/nutrition", icon: Utensils },
+  { title: "Mes check-ins", url: "/client/checkins", icon: CheckCircle },
+  { title: "Progression", url: "/client/progress", icon: TrendingUp },
+  { title: "Parrainer", url: "/client/referrals", icon: Heart },
   { title: "Paramètres", url: "/client/settings", icon: Settings },
 ];
 
-const clientMenuItems = [
-  { title: "Dashboard", url: "/dashboard/client", icon: Home },
-  { title: "Chat Coach", url: "/dashboard/client/chat", icon: MessageSquare },
-  { title: "Entraînement", url: "/dashboard/client/training", icon: Dumbbell },
-  { title: "Nutrition", url: "/dashboard/client/nutrition", icon: Utensils },
-  { title: "Progression", url: "/dashboard/client/progress", icon: TrendingUp },
-  { title: "Parrainer", url: "/dashboard/client/referrals", icon: Heart },
-  { title: "Photos", url: "/progress-photos", icon: Camera },
-  { title: "Paramètres", url: "/client/settings", icon: Settings },
+const athleteMenuItems = [
+  { title: "Dashboard", url: "/athlete/dashboard", icon: Home },
+  { title: "Créer programme", url: "/athlete/training/create", icon: Dumbbell },
+  { title: "Créer nutrition", url: "/athlete/nutrition/create", icon: Utensils },
+  { title: "Mes check-ins", url: "/athlete/checkins", icon: CheckCircle },
+  { title: "Assistant IA", url: "/athlete/ai", icon: Brain },
+  { title: "Chat IA", url: "/athlete/chat", icon: MessageSquare },
+  { title: "Abonnement", url: "/athlete/subscription", icon: CreditCard },
+  { title: "Paramètres", url: "/athlete/settings", icon: Settings },
 ];
 
 export function AppSidebar() {
   const [location, setLocation] = useLocation();
-  
-  const { data: user } = useQuery<User>({
-    queryKey: ["/api/auth/me"],
-  });
+  const { user, logout } = useAuth();
 
-  const logoutMutation = useMutation({
-    mutationFn: async () => {
-      await apiRequest("POST", "/api/auth/logout", {});
-    },
-    onSuccess: () => {
-      removeAuthToken();
-      queryClient.setQueryData(["/api/auth/me"], null);
-      setLocation("/");
-    },
-  });
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setLocation("/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
-  const menuItems = user?.role === "coach" 
-    ? coachMenuItems 
-    : user?.isClient === true 
-    ? clientMenuItems 
-    : athleteMenuItems;
+  const menuItems = 
+    user?.role === "coach" ? coachMenuItems :
+    user?.role === "client" ? clientMenuItems :
+    athleteMenuItems;
 
-  const getInitials = (name: string) => {
+  const getInitials = (name?: string | null) => {
+    if (!name) return "U";
     return name
       .split(" ")
       .map((n) => n[0])
@@ -144,7 +134,7 @@ export function AppSidebar() {
                 </p>
                 <div className="flex items-center gap-2">
                   <Badge variant="secondary" className="text-xs">
-                    {user.role === "coach" ? "Coach" : "Client"}
+                    {user.role === "coach" ? "Coach" : user.role === "client" ? "Client" : "Athlète"}
                   </Badge>
                   {user.role === "coach" && user.isPro && (
                     <Badge variant="default" className="text-xs">
@@ -155,7 +145,7 @@ export function AppSidebar() {
               </div>
             </div>
             <button
-              onClick={() => logoutMutation.mutate()}
+              onClick={handleLogout}
               className="flex items-center gap-2 w-full px-3 py-2 text-sm text-muted-foreground hover-elevate active-elevate-2 rounded-lg transition-colors"
               data-testid="button-logout"
             >

@@ -1,244 +1,281 @@
-import { useStripe, Elements, PaymentElement, useElements } from "@stripe/react-stripe-js";
-import { loadStripe, type Stripe } from "@stripe/stripe-js";
-import { useEffect, useState } from "react";
-import { apiRequest } from "../lib/queryClient";
-import { useToast } from "../hooks/use-toast";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card";
-import { Button } from "../components/ui/button";
-import { Badge } from "../components/ui/badge";
-import { Check, Crown, Zap, Users, Calendar, MessageSquare } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import type { User } from "../../shared/schema";
-import { useAppConfig } from "../lib/config";
+import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { PageWrapper } from "@/components/PageWrapper";
+import { Check, Crown, Zap, Users, Calendar, MessageSquare, AlertCircle, XCircle, Gift } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
+import { useLocation } from "wouter";
 
-// Stripe integration - using Replit's Stripe blueprint
-const stripePublicKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY || "";
-
-const SubscribeForm = () => {
-  const stripe = useStripe();
-  const elements = useElements();
-  const { toast } = useToast();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!stripe || !elements) {
-      return;
-    }
-
-    const { error } = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: window.location.origin + "/coach/dashboard",
-      },
-    });
-
-    if (error) {
-      toast({
-        title: "Paiement échoué",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Paiement réussi",
-        description: "Vous êtes maintenant abonné à CoachPro !",
-      });
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <PaymentElement />
-      <Button
-        type="submit"
-        disabled={!stripe || !elements}
-        className="w-full"
-        size="lg"
-        data-testid="button-confirm-payment"
-      >
-        <Crown className="w-4 h-4 mr-2" />
-        Confirmer le paiement
-      </Button>
-    </form>
-  );
-};
-
-function SubscriptionContent() {
-  const { data: config } = useAppConfig();
-  const [clientSecret, setClientSecret] = useState("");
-  const [stripeInstance, setStripeInstance] = useState<Stripe | null>(null);
-  const { data: user } = useQuery<User>({
-    queryKey: ["/api/auth/me"],
-  });
-
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      // In TEST_MODE, skip API and set demo secret
-      if (config?.testMode) {
-        if (mounted) setClientSecret("demo_secret_key");
-      } else {
-        try {
-          const res = await apiRequest("POST", "/api/get-or-create-subscription", {});
-          const data = await res.json();
-          if (mounted) setClientSecret(data.clientSecret || "");
-        } catch (error) {
-          console.error("Error creating subscription:", error);
-        }
-      }
-      // Load Stripe instance
-      try {
-        const s = await loadStripe(stripePublicKey);
-        if (mounted) setStripeInstance(s);
-      } catch (_e) {
-        if (mounted) setStripeInstance(null);
-      }
-    })();
-    return () => { mounted = false; };
-  }, []);
-
-  const features = [
-    {
-      icon: Users,
-      title: "Clients illimités",
-      description: "Gérez autant de clients que vous le souhaitez",
-    },
-    {
-      icon: Calendar,
-      title: "Programmes illimités",
-      description: "Créez des programmes personnalisés sans limites",
-    },
-    {
-      icon: MessageSquare,
-      title: "Coach IA avancé",
-      description: "Accès complet à l'assistant IA pour vos clients",
-    },
-    {
-      icon: Zap,
-      title: "Analyses avancées",
-      description: "Statistiques détaillées de progression",
-    },
-  ];
-
-  if (user?.isPro) {
-    return (
-      <div className="p-8 max-w-4xl mx-auto">
-        <Card className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-primary/20">
-          <CardContent className="p-8 text-center">
-            <div className="bg-primary/10 text-primary w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Crown className="w-8 h-8" />
-            </div>
-            <h2 className="text-2xl font-bold mb-2">Vous êtes déjà abonné Pro</h2>
-            <p className="text-muted-foreground mb-4">
-              Profitez de toutes les fonctionnalités premium de CoachPro
-            </p>
-            <Badge variant="default" className="text-sm">
-              Abonnement actif
-            </Badge>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (!clientSecret) {
-    return (
-      <div className="p-8 max-w-3xl mx-auto">
-        <Card>
-          <CardContent className="p-6 text-center">
-            <p className="font-medium">Chargement de Stripe...</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  return (
-    <div className="p-8 max-w-5xl mx-auto space-y-8">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-2" data-testid="text-page-title">
-          Passez à CoachPro
-        </h1>
-        <p className="text-muted-foreground">
-          Débloquez toutes les fonctionnalités et développez votre activité de coaching
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Features */}
-        <div>
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Crown className="w-5 h-5 text-primary" />
-                Fonctionnalités Pro
-              </CardTitle>
-              <CardDescription>
-                Tout ce dont vous avez besoin pour gérer votre activité
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {features.map((feature, index) => (
-                <div key={index} className="flex gap-3">
-                  <div className="bg-primary/10 text-primary p-2 rounded-lg shrink-0">
-                    <feature.icon className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">{feature.title}</p>
-                    <p className="text-xs text-muted-foreground">{feature.description}</p>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          <Card className="mt-6 bg-gradient-to-r from-green-500/10 to-transparent border-green-500/20">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="bg-green-500/20 text-green-600 dark:text-green-400 p-2 rounded-full">
-                  <Check className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="font-semibold text-sm">Garantie satisfait ou remboursé</p>
-                  <p className="text-xs text-muted-foreground">
-                    Annulez à tout moment, remboursement sous 30 jours
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Payment Form */}
-        <div>
-          <Card>
-            <CardHeader>
-              <CardTitle>Abonnement mensuel</CardTitle>
-              <div className="flex items-baseline gap-2 mt-2">
-                <span className="text-4xl font-bold">29€</span>
-                <span className="text-muted-foreground">/mois</span>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {stripeInstance ? (
-                <Elements stripe={stripeInstance} options={{ clientSecret }}>
-                  <SubscribeForm />
-                </Elements>
-              ) : (
-                <div className="text-center text-sm text-muted-foreground">Chargement de Stripe...</div>
-              )}
-              <p className="text-xs text-muted-foreground text-center mt-4">
-                Paiement sécurisé par Stripe. Vos données sont protégées.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </div>
-  );
+interface SubscriptionInfo {
+  id: string;
+  plan: string;
+  status: "active" | "canceled" | "expired" | "past_due";
+  startDate: string;
+  renewalDate?: string;
+  endDate?: string;
+  referralCode?: string;
+  discount?: number;
 }
 
 export default function Subscription() {
-  return <SubscriptionContent />;
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
+
+  // Get subscription status
+  const { data: statusData, isLoading } = useQuery({
+    queryKey: ["subscription-status", user?.id],
+    queryFn: async () => {
+      if (!user?.id) throw new Error("No user logged in");
+      const res = await fetch(`/api/subscriptions/${user.id}`, {
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to fetch subscription");
+      return res.json();
+    },
+    enabled: !!user?.id,
+  });
+
+  // Cancel subscription
+  const cancelMutation = useMutation({
+    mutationFn: async () => {
+      if (!user?.id) throw new Error("No user logged in");
+      const res = await fetch(`/api/subscriptions/cancel/${user.id}`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to cancel subscription");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["subscription-status", user?.id] });
+      toast({
+        title: "Abonnement annulé",
+        description: "Ton abonnement a été annulé avec succès",
+      });
+    },
+  });
+
+  const subscription: SubscriptionInfo | null = statusData?.subscription || null;
+  const hasActiveSubscription = statusData?.active || false;
+
+  const getPlanInfo = (planId: string) => {
+    const plans: Record<string, { name: string; price: number; features: string[] }> = {
+      athlete: {
+        name: "Athlète Indépendant",
+        price: 19,
+        features: [
+          "Coach IA personnel illimité",
+          "Création de programmes",
+          "Plans nutrition personnalisés",
+          "Suivi de progression",
+          "Check-ins quotidiens",
+        ],
+      },
+      client: {
+        name: "Client Accompagné",
+        price: 29,
+        features: [
+          "Tout du plan Athlète",
+          "Coach humain dédié",
+          "Programme personnalisé",
+          "Communication directe",
+          "Feedback en temps réel",
+        ],
+      },
+      coach: {
+        name: "Coach Professionnel",
+        price: 49,
+        features: [
+          "Gestion illimitée de clients",
+          "Création de programmes assistée IA",
+          "Analytics coach avancés",
+          "Tableau de bord professionnel",
+          "Codes de parrainage",
+        ],
+      },
+    };
+    return plans[planId] || plans.athlete;
+  };
+
+  if (isLoading) {
+    return (
+      <PageWrapper>
+        <Card>
+          <CardContent className="py-12 text-center">
+            <p className="text-muted-foreground">Chargement...</p>
+          </CardContent>
+        </Card>
+      </PageWrapper>
+    );
+  }
+
+  return (
+    <PageWrapper>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold flex items-center gap-2">
+            <Crown className="w-8 h-8" />
+            Mon abonnement
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Gérer ton abonnement Synrgy
+          </p>
+        </div>
+
+        {hasActiveSubscription && subscription ? (
+          <>
+            {/* Active Subscription */}
+            <Card className="border-primary/20">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>{getPlanInfo(subscription.plan).name}</CardTitle>
+                    <CardDescription>
+                      Actif depuis le {new Date(subscription.startDate).toLocaleDateString("fr-FR")}
+                      {subscription.renewalDate && (
+                        <> · Renouvellement le {new Date(subscription.renewalDate).toLocaleDateString("fr-FR")}</>
+                      )}
+                    </CardDescription>
+                  </div>
+                  <Badge 
+                    variant="default" 
+                    className={subscription.status === "active" ? "bg-green-600" : subscription.status === "canceled" ? "bg-red-600" : "bg-orange-600"}
+                  >
+                    {subscription.status === "active" ? <Check className="w-3 h-3 mr-1" /> : <XCircle className="w-3 h-3 mr-1" />}
+                    {subscription.status === "active" ? "Actif" : subscription.status === "canceled" ? "Annulé" : "Expiré"}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-baseline gap-2">
+                  {subscription.discount && subscription.discount > 0 ? (
+                    <>
+                      <span className="text-3xl font-bold text-green-600">
+                        {(getPlanInfo(subscription.plan).price * (1 - subscription.discount / 100)).toFixed(0)}€
+                      </span>
+                      <span className="text-sm line-through text-muted-foreground">
+                        {getPlanInfo(subscription.plan).price}€
+                      </span>
+                      <Badge variant="default" className="bg-green-600">
+                        -{subscription.discount}%
+                      </Badge>
+                    </>
+                  ) : (
+                    <span className="text-3xl font-bold">
+                      {getPlanInfo(subscription.plan).price}€
+                    </span>
+                  )}
+                  <span className="text-muted-foreground">/mois</span>
+                </div>
+
+                {subscription.referralCode && (
+                  <Alert>
+                    <Gift className="h-4 w-4" />
+                    <AlertDescription>
+                      Code de parrainage utilisé : <strong>{subscription.referralCode}</strong>
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                <div className="pt-4">
+                  <h4 className="font-semibold mb-3">Fonctionnalités incluses</h4>
+                  <ul className="space-y-2">
+                    {getPlanInfo(subscription.plan).features.map((feature, index) => (
+                      <li key={index} className="flex items-center gap-2 text-sm">
+                        <Check className="w-4 h-4 text-green-600" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="pt-4 flex gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setLocation("/pricing")}
+                    className="flex-1"
+                  >
+                    Changer de formule
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={() => {
+                      if (confirm("Es-tu sûr de vouloir annuler ton abonnement ?")) {
+                        cancelMutation.mutate();
+                      }
+                    }}
+                    disabled={cancelMutation.isPending}
+                    className="flex-1"
+                  >
+                    <XCircle className="w-4 h-4 mr-2" />
+                    {cancelMutation.isPending ? "Annulation..." : "Annuler l'abonnement"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        ) : (
+          <>
+            {/* No Active Subscription */}
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Tu n'as pas d'abonnement actif. Souscris à une formule pour débloquer toutes les fonctionnalités Synrgy.
+              </AlertDescription>
+            </Alert>
+
+            <Card>
+              <CardContent className="py-12 text-center">
+                <Crown className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg font-semibold mb-2">
+                  Débloque tout le potentiel de Synrgy
+                </h3>
+                <p className="text-muted-foreground mb-6">
+                  Choisis la formule adaptée à tes besoins
+                </p>
+                <Button
+                  size="lg"
+                  onClick={() => setLocation("/pricing")}
+                >
+                  Voir les formules
+                </Button>
+              </CardContent>
+            </Card>
+          </>
+        )}
+
+        {/* FAQ */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Questions fréquentes</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <h4 className="font-medium mb-1">Puis-je changer de formule ?</h4>
+              <p className="text-sm text-muted-foreground">
+                Oui ! Tu peux upgrader ou downgrader ton abonnement à tout moment depuis cette page.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-medium mb-1">Comment annuler mon abonnement ?</h4>
+              <p className="text-sm text-muted-foreground">
+                Tu peux annuler ton abonnement à tout moment depuis cette page. L'annulation prend effet immédiatement.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-medium mb-1">Les paiements sont-ils sécurisés ?</h4>
+              <p className="text-sm text-muted-foreground">
+                Absolument. En mode test, les paiements sont simulés. En mode production, nous utilisons Stripe pour des paiements 100% sécurisés.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </PageWrapper>
+  );
 }

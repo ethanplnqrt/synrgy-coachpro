@@ -1,31 +1,17 @@
 import fs from "fs";
 import path from "path";
 
-const dbPath = path.join(process.cwd(), "server/demo-db.json");
+const dbPath = path.join(process.cwd(), "server/db.json");
 
-type SynrgyUser = {
-  id: string;
-  email: string;
-  password: string;
-  role: string;
-  createdAt: number;
-};
-
-type SynrgySession = {
+export type SynrgyMessage = {
   id: string;
   userId: string;
-  createdAt: number;
-};
-
-type SynrgyMessage = {
-  id: string;
-  userId: string;
-  message: string;
-  reply: string;
+  role: "user" | "assistant";
+  content: string;
   timestamp: number;
 };
 
-type SynrgyNutritionEntry = {
+export type SynrgyNutritionEntry = {
   id: string;
   userId: string;
   timestamp: number;
@@ -34,7 +20,7 @@ type SynrgyNutritionEntry = {
   macros?: Record<string, number>;
 };
 
-type SynrgyGoal = {
+export type SynrgyGoal = {
   id: string;
   userId: string;
   title: string;
@@ -45,16 +31,12 @@ type SynrgyGoal = {
 };
 
 export type SynrgyDB = {
-  users: SynrgyUser[];
-  sessions: SynrgySession[];
   messages: SynrgyMessage[];
   nutrition: SynrgyNutritionEntry[];
   goals: SynrgyGoal[];
 };
 
 const defaultDB: SynrgyDB = {
-  users: [],
-  sessions: [],
   messages: [],
   nutrition: [],
   goals: [],
@@ -76,14 +58,11 @@ function ensureFile(): SynrgyDB {
   }
 
   const merged: SynrgyDB = {
-    users: Array.isArray(parsed.users) ? parsed.users : [],
-    sessions: Array.isArray(parsed.sessions) ? parsed.sessions : [],
     messages: Array.isArray(parsed.messages) ? parsed.messages : [],
     nutrition: Array.isArray(parsed.nutrition) ? parsed.nutrition : [],
     goals: Array.isArray(parsed.goals) ? parsed.goals : [],
   };
 
-  // Keep file in sync if structure changed
   if (JSON.stringify(merged) !== raw) {
     fs.writeFileSync(dbPath, JSON.stringify(merged, null, 2));
   }

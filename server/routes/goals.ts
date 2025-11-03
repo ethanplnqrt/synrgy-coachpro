@@ -1,42 +1,32 @@
 import express from "express";
 import { v4 as uuidv4 } from "uuid";
 import { loadDB, saveDB } from "../utils/db.js";
+import { authenticate, type AuthenticatedRequest } from "../auth/authMiddleware.js";
 
 const router = express.Router();
 
-router.get("/", (req, res) => {
-  const token = req.headers.authorization?.replace("Bearer ", "");
-  if (!token) {
-    return res.status(401).json({ success: false, error: "Missing token" });
-  }
+router.use(authenticate);
 
+router.get("/", (req: AuthenticatedRequest, res) => {
   const db = loadDB();
-  const session = db.sessions.find((s) => s.id === token);
-  if (!session) {
-    return res.status(401).json({ success: false, error: "Invalid token" });
-  }
-
-  const goals = db.goals.filter((goal) => goal.userId === session.userId);
+  const user = req.user!;
+  const goals = db.goals.filter((goal) => goal.userId === user.id);
   return res.json({ success: true, goals });
 });
 
-router.post("/", (req, res) => {
-  const token = req.headers.authorization?.replace("Bearer ", "");
+router.post("/", (req: AuthenticatedRequest, res) => {
   const { title, targetDate } = req.body || {};
 
-  if (!token || !title) {
-    return res.status(400).json({ success: false, error: "Missing token or title" });
+  if (!title) {
+    return res.status(400).json({ success: false, error: "Missing title" });
   }
 
   const db = loadDB();
-  const session = db.sessions.find((s) => s.id === token);
-  if (!session) {
-    return res.status(401).json({ success: false, error: "Invalid token" });
-  }
+  const user = req.user!;
 
   const goal = {
     id: uuidv4(),
-    userId: session.userId,
+    userId: user.id,
     title,
     targetDate,
     status: "active" as const,
@@ -50,22 +40,14 @@ router.post("/", (req, res) => {
   return res.status(201).json({ success: true, goal });
 });
 
-router.patch("/:goalId", (req, res) => {
-  const token = req.headers.authorization?.replace("Bearer ", "");
+router.patch("/:goalId", (req: AuthenticatedRequest, res) => {
   const { status, progress } = req.body || {};
   const { goalId } = req.params;
 
-  if (!token) {
-    return res.status(401).json({ success: false, error: "Missing token" });
-  }
-
   const db = loadDB();
-  const session = db.sessions.find((s) => s.id === token);
-  if (!session) {
-    return res.status(401).json({ success: false, error: "Invalid token" });
-  }
+  const user = req.user!;
 
-  const goal = db.goals.find((g) => g.id === goalId && g.userId === session.userId);
+  const goal = db.goals.find((g) => g.id === goalId && g.userId === user.id);
   if (!goal) {
     return res.status(404).json({ success: false, error: "Goal not found" });
   }
@@ -79,6 +61,7 @@ router.patch("/:goalId", (req, res) => {
   }
 
   saveDB(db);
+
   return res.json({ success: true, goal });
 });
 

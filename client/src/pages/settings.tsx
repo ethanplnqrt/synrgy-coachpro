@@ -122,7 +122,7 @@ export default function Settings() {
               <div className="space-y-2">
                 <Label className="text-sm font-medium">Nom d'utilisateur</Label>
                 <div className="p-3 bg-muted rounded-lg text-sm text-muted-foreground">
-                  coach.demo@coachpro.com
+                  utilisateur@synrgy.com
                 </div>
               </div>
               <div className="space-y-2">
