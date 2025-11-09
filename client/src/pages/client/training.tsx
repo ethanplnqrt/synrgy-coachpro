@@ -1,225 +1,244 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import { Button } from '../../components/ui/button';
-import { Badge } from '../../components/ui/badge';
-import { 
-  Dumbbell, 
-  Clock, 
-  Target, 
-  CheckCircle2, 
-  Play,
-  Calendar
-} from 'lucide-react';
-import { PageWrapper } from '../../components/PageWrapper';
-import { useLocation} from 'wouter';
+/**
+ * 🏋️ CLIENT TRAINING PAGE
+ * 
+ * Hevy-style workout logger.
+ * - View program
+ * - Log sets/reps/weight
+ * - Track progress
+ */
 
-interface Exercise {
-  id: string;
-  name: string;
-  sets: number;
-  reps: number;
-  weight: number;
-  rpe: number;
-  rest: number;
-  notes?: string;
-}
-
-interface Workout {
-  id: string;
-  name: string;
-  date: string;
-  duration: number;
-  exercises: Exercise[];
-}
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Dumbbell, Plus, Check } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ClientTraining() {
-  const [, setLocation] = useLocation();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [program, setProgram] = useState<any>(null);
+  const [activeSession, setActiveSession] = useState<any>(null);
+  const [sessionEntries, setSessionEntries] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock workout data
-  const workout: Workout = {
-    id: '1',
-    name: 'Push Day - Pecs & Triceps',
-    date: 'Demain 14h00',
-    duration: 60,
-    exercises: [
-      {
-        id: '1',
-        name: 'Développé couché',
-        sets: 4,
-        reps: 10,
-        weight: 60,
-        rpe: 7,
-        rest: 180,
-        notes: 'Focus sur la phase négative'
-      },
-      {
-        id: '2',
-        name: 'Développé incliné haltères',
-        sets: 3,
-        reps: 12,
-        weight: 25,
-        rpe: 8,
-        rest: 120
-      },
-      {
-        id: '3',
-        name: 'Dips',
-        sets: 3,
-        reps: 12,
-        weight: 0,
-        rpe: 7,
-        rest: 90
-      },
-      {
-        id: '4',
-        name: 'Extension triceps',
-        sets: 3,
-        reps: 15,
-        weight: 15,
-        rpe: 6,
-        rest: 60
+  useEffect(() => {
+    fetchProgram();
+  }, []);
+
+  const fetchProgram = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`/api/programs/${user?.id}`, {
+        credentials: 'include',
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setProgram(data);
       }
-    ]
+    } catch (error) {
+      console.error('Error fetching program:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  return (
-    <PageWrapper className="min-h-screen bg-background p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between"
-        >
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">
-              Mon programme d'entraînement
-            </h1>
-            <p className="text-muted-foreground mt-2">
-              Programme créé par ton coach Alexandre
-            </p>
-          </div>
-          <Button variant="outline" className="border-border">
-            <Calendar className="w-4 h-4 mr-2" />
-            Planning
-          </Button>
-        </motion.div>
+  const startWorkout = (block: any) => {
+    setActiveSession(block);
+    // Initialize entries from program
+    const entries = block.exercises.map((ex: any) => ({
+      exerciseId: ex.id,
+      exerciseName: ex.name,
+      performedSets: ex.sets.map((s: any) => ({ ...s, completed: false })),
+    }));
+    setSessionEntries(entries);
+  };
 
-        {/* Workout Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <Card className="card">
+  const updateSet = (entryIdx: number, setIdx: number, field: string, value: any) => {
+    const updated = [...sessionEntries];
+    updated[entryIdx].performedSets[setIdx][field] = value;
+    setSessionEntries(updated);
+  };
+
+  const toggleSetComplete = (entryIdx: number, setIdx: number) => {
+    const updated = [...sessionEntries];
+    updated[entryIdx].performedSets[setIdx].completed =
+      !updated[entryIdx].performedSets[setIdx].completed;
+    setSessionEntries(updated);
+  };
+
+  const finishWorkout = async () => {
+    try {
+      const res = await fetch('/api/sessions/log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          programId: program.id,
+          entries: sessionEntries,
+          notes: '',
+        }),
+      });
+
+      if (res.ok) {
+        toast({
+          title: 'Séance enregistrée !',
+          description: 'Félicitations pour ton travail 💪',
+        });
+        setActiveSession(null);
+        setSessionEntries([]);
+      }
+    } catch (error) {
+      console.error('Error logging session:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Impossible d\'enregistrer la séance',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Chargement...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!program) {
+    return (
+      <div className="container mx-auto p-6">
+        <Card>
+          <CardContent className="text-center py-12">
+            <Dumbbell className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-2">Aucun programme actif</h2>
+            <p className="text-muted-foreground">
+              Ton coach n'a pas encore créé de programme pour toi.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // If workout is active
+  if (activeSession) {
+    return (
+      <div className="container mx-auto p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-primary">{activeSession.name}</h1>
+            <p className="text-muted-foreground">En cours...</p>
+          </div>
+          <Badge variant="default">Active</Badge>
+        </div>
+
+        <div className="space-y-6">
+          {sessionEntries.map((entry, entryIdx) => (
+            <Card key={entryIdx}>
+              <CardHeader>
+                <CardTitle className="text-lg">{entry.exerciseName}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {entry.performedSets.map((set: any, setIdx: number) => (
+                    <div
+                      key={setIdx}
+                      className={`flex items-center gap-4 p-3 rounded-lg ${
+                        set.completed ? 'bg-primary/10' : 'bg-accent'
+                      }`}
+                    >
+                      <div className="text-sm font-medium w-12">
+                        Série {setIdx + 1}
+                      </div>
+                      <Input
+                        type="number"
+                        placeholder="Reps"
+                        value={set.reps || ''}
+                        onChange={(e) => updateSet(entryIdx, setIdx, 'reps', parseInt(e.target.value) || 0)}
+                        className="w-20"
+                      />
+                      <Input
+                        type="number"
+                        placeholder="Poids (kg)"
+                        value={set.weight || ''}
+                        onChange={(e) => updateSet(entryIdx, setIdx, 'weight', parseFloat(e.target.value) || 0)}
+                        className="w-28"
+                      />
+                      <Button
+                        variant={set.completed ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => toggleSetComplete(entryIdx, setIdx)}
+                      >
+                        <Check className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <div className="flex gap-4">
+          <Button variant="outline" onClick={() => setActiveSession(null)} className="flex-1">
+            Annuler
+          </Button>
+          <Button onClick={finishWorkout} className="flex-1">
+            Terminer l'entraînement
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Program overview
+  return (
+    <div className="container mx-auto p-6 space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold text-primary">{program.title}</h1>
+        <p className="text-muted-foreground mt-1">Ton programme d'entraînement</p>
+      </div>
+
+      <div className="space-y-4">
+        {program.blocks?.map((block: any, idx: number) => (
+          <Card key={idx}>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <Dumbbell className="w-5 h-5" />
-                  {workout.name}
-                </CardTitle>
-                <Badge className="badge-primary">
-                  <Clock className="w-3 h-3 mr-1" />
-                  {workout.duration} min
-                </Badge>
-              </div>
-              <p className="text-sm text-muted-foreground mt-2">
-                Séance prévue : {workout.date}
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {workout.exercises.map((exercise, index) => (
-                  <motion.div
-                    key={exercise.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.2 + index * 0.1 }}
-                    className="p-4 border border-border rounded-lg bg-surface"
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
-                          <span className="text-sm font-semibold text-primary">{index + 1}</span>
-                        </div>
-                        <h3 className="font-semibold text-foreground">{exercise.name}</h3>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-4 gap-4 text-sm">
-                      <div>
-                        <p className="text-muted-foreground">Séries</p>
-                        <p className="font-semibold text-foreground">{exercise.sets}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Reps</p>
-                        <p className="font-semibold text-foreground">{exercise.reps}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Poids</p>
-                        <p className="font-semibold text-foreground">{exercise.weight}kg</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Repos</p>
-                        <p className="font-semibold text-foreground">{exercise.rest}s</p>
-                      </div>
-                    </div>
-                    {exercise.notes && (
-                      <div className="mt-3 p-2 bg-info/10 rounded text-sm text-foreground">
-                        💡 {exercise.notes}
-                      </div>
-                    )}
-                  </motion.div>
-                ))}
-              </div>
-
-              <div className="mt-6 pt-6 border-t border-border">
-                <Button 
-                  className="w-full btn-primary"
-                  onClick={() => {
-                    // Navigate to workout execution or log
-                  }}
-                >
-                  <Play className="w-4 h-4 mr-2" />
-                  Commencer la séance
+                <div>
+                  <CardTitle>{block.name}</CardTitle>
+                  <CardDescription>
+                    {block.exercises?.length} exercices
+                  </CardDescription>
+                </div>
+                <Button onClick={() => startWorkout(block)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Commencer
                 </Button>
               </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Progress Summary */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <Card className="card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="w-5 h-5" />
-                Progression cette semaine
-              </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-surface rounded-lg">
-                  <span className="text-sm text-muted-foreground">Séances complétées</span>
-                  <span className="font-semibold text-foreground">3/4</span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-surface rounded-lg">
-                  <span className="text-sm text-muted-foreground">Développé couché</span>
-                  <span className="font-semibold text-secondary">+2.5kg cette semaine</span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-surface rounded-lg">
-                  <span className="text-sm text-muted-foreground">Volume total</span>
-                  <span className="font-semibold text-foreground">8,450 kg</span>
-                </div>
+              <div className="space-y-2">
+                {block.exercises?.map((ex: any, exIdx: number) => (
+                  <div key={exIdx} className="flex items-center justify-between p-3 bg-accent rounded-lg">
+                    <span className="font-medium">{ex.name}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {ex.sets?.length} x {ex.sets[0]?.reps} reps
+                    </span>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+        ))}
       </div>
-    </PageWrapper>
+    </div>
   );
 }

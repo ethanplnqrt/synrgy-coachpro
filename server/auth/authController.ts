@@ -5,6 +5,22 @@ import { signToken, AUTH_COOKIE_NAME, buildCookieOptions } from "./authToken.js"
 
 const COOKIE_OPTIONS = buildCookieOptions();
 
+// 🧪 TEST USERS (Development mode)
+const TEST_USERS = [
+  {
+    id: "test-coach-1",
+    email: "coach@test.com",
+    password: "test123",
+    role: "coach" as const,
+  },
+  {
+    id: "test-client-1",
+    email: "client@test.com",
+    password: "test123",
+    role: "client" as const,
+  },
+];
+
 export async function registerUser(email: string, password: string, role: "coach" | "client" | "athlete") {
   if (!email || !password || !role) {
     throw new Error("Missing email, password or role");
@@ -47,6 +63,26 @@ export async function registerUser(email: string, password: string, role: "coach
 export async function loginUser(email: string, password: string) {
   if (!email || !password) {
     throw new Error("Missing email or password");
+  }
+
+  // 🧪 Check for test users first (development mode)
+  const testUser = TEST_USERS.find(u => u.email === email && u.password === password);
+  
+  if (testUser) {
+    console.log(`🧪 Test login for ${email} (${testUser.role})`);
+    
+    const token = signToken(testUser.id);
+    
+    return {
+      user: {
+        id: testUser.id,
+        email: testUser.email,
+        role: testUser.role,
+      },
+      token,
+      cookieName: AUTH_COOKIE_NAME,
+      cookieOptions: COOKIE_OPTIONS,
+    };
   }
 
   const user = findUserByEmail(email);

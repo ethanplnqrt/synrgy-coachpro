@@ -1,277 +1,192 @@
-import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Plus, Mail, User as UserIcon, Trash2, Users } from "lucide-react";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
-import type { User } from "@shared/schema";
+/**
+ * 👥 COACH CLIENTS PAGE
+ * 
+ * List and manage all clients
+ */
+
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ProCard } from '@/components/ProCard';
+import { ProButton } from '@/components/ProButton';
+import { SynrgyScore } from '@/components/SynrgyScore';
+import { Users, Search, Plus, Filter } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+const demoClients = [
+  {
+    id: 1,
+    name: 'Marie Dubois',
+    email: 'marie.d@email.com',
+    score: 85,
+    trend: 'up' as const,
+    status: 'active',
+    joinedAt: '2025-01-15',
+    lastActivity: 'Il y a 2 heures',
+  },
+  {
+    id: 2,
+    name: 'Thomas Martin',
+    email: 'thomas.m@email.com',
+    score: 72,
+    trend: 'stable' as const,
+    status: 'active',
+    joinedAt: '2024-12-10',
+    lastActivity: 'Hier',
+  },
+  {
+    id: 3,
+    name: 'Sarah Lopez',
+    email: 'sarah.l@email.com',
+    score: 91,
+    trend: 'up' as const,
+    status: 'active',
+    joinedAt: '2025-02-01',
+    lastActivity: 'Il y a 4 heures',
+  },
+];
 
 export default function CoachClients() {
-  const { toast } = useToast();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [newClient, setNewClient] = useState({
-    fullName: "",
-    email: "",
-    username: "",
-    password: "",
-  });
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const { data: user } = useQuery<User>({
-    queryKey: ["/api/auth/me"],
-  });
-
-  const { data: clients = [], isLoading } = useQuery<User[]>({
-    queryKey: ["/api/clients"],
-  });
-
-  const createClientMutation = useMutation({
-    mutationFn: async (data: typeof newClient) => {
-      const res = await apiRequest("POST", "/api/clients", {
-        ...data,
-        role: "client",
-        coachId: user?.id,
-      });
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
-      toast({
-        title: "Client ajouté",
-        description: "Le client a été ajouté avec succès",
-      });
-      setIsDialogOpen(false);
-      setNewClient({ fullName: "", email: "", username: "", password: "" });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Erreur",
-        description: error.message || "Impossible d'ajouter le client",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const deleteClientMutation = useMutation({
-    mutationFn: async (id: string) => {
-      await apiRequest("DELETE", `/api/clients/${id}`, {});
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
-      toast({
-        title: "Client supprimé",
-        description: "Le client a été supprimé avec succès",
-      });
-    },
-  });
-
-  const handleCreateClient = (e: React.FormEvent) => {
-    e.preventDefault();
-    createClientMutation.mutate(newClient);
-  };
-
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
-  const myClients = clients.filter((c) => c.coachId === user?.id);
+  const filteredClients = demoClients.filter(client =>
+    client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    client.email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
-    <div className="p-8 space-y-6 max-w-7xl mx-auto">
+    <div className="min-h-screen bg-background p-6">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <h1 className="text-4xl font-bold" data-testid="text-page-title">
-            Mes clients
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Gérez vos clients et suivez leur progression
-          </p>
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-8"
+      >
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="heading-1 flex items-center gap-3">
+              <Users className="w-8 h-8 accent-text" />
+              Mes Clients
+            </h1>
+            <p className="text-secondary mt-2">
+              Gère tes clients et suis leur progression
+            </p>
+          </div>
+          
+          <ProButton variant="primary" onClick={() => navigate('/coach/clients/new')}>
+            <Plus className="w-4 h-4 mr-2" />
+            Nouveau client
+          </ProButton>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button data-testid="button-add-client">
-              <Plus className="w-4 h-4 mr-2" />
-              Ajouter un client
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Ajouter un nouveau client</DialogTitle>
-              <DialogDescription>
-                Créez un compte pour votre nouveau client
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleCreateClient} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="client-fullname">Nom complet</Label>
-                <Input
-                  id="client-fullname"
-                  data-testid="input-client-fullname"
-                  value={newClient.fullName}
-                  onChange={(e) => setNewClient({ ...newClient, fullName: e.target.value })}
-                  placeholder="Jean Dupont"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="client-email">Email</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="client-email"
-                    data-testid="input-client-email"
-                    type="email"
-                    value={newClient.email}
-                    onChange={(e) => setNewClient({ ...newClient, email: e.target.value })}
-                    placeholder="jean@example.com"
-                    className="pl-10"
-                    required
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="client-username">Nom d'utilisateur</Label>
-                <div className="relative">
-                  <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="client-username"
-                    data-testid="input-client-username"
-                    value={newClient.username}
-                    onChange={(e) => setNewClient({ ...newClient, username: e.target.value })}
-                    placeholder="jeandupont"
-                    className="pl-10"
-                    required
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="client-password">Mot de passe initial</Label>
-                <Input
-                  id="client-password"
-                  data-testid="input-client-password"
-                  type="password"
-                  value={newClient.password}
-                  onChange={(e) => setNewClient({ ...newClient, password: e.target.value })}
-                  placeholder="••••••••"
-                  required
-                />
-              </div>
-              <div className="flex gap-2 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsDialogOpen(false)}
-                  className="flex-1"
-                >
-                  Annuler
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={createClientMutation.isPending}
-                  className="flex-1"
-                  data-testid="button-submit-client"
-                >
-                  {createClientMutation.isPending ? "Ajout..." : "Ajouter"}
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </div>
+
+        {/* Search & Filter */}
+        <div className="flex gap-3">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary" />
+            <input
+              type="text"
+              placeholder="Rechercher un client..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 rounded-xl bg-white/5 border border-white/10 focus:border-accent-color/30 outline-none transition-all"
+            />
+          </div>
+          <ProButton variant="secondary">
+            <Filter className="w-4 h-4 mr-2" />
+            Filtres
+          </ProButton>
+        </div>
+      </motion.div>
 
       {/* Clients Grid */}
-      {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-16 h-16 rounded-full bg-muted" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-4 bg-muted rounded w-3/4" />
-                    <div className="h-3 bg-muted rounded w-1/2" />
-                  </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {filteredClients.map((client, index) => (
+          <motion.div
+            key={client.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+          >
+            <ProCard hover onClick={() => navigate(`/coach/clients/${client.id}`)}>
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-16 h-16 rounded-full accent-bg flex items-center justify-center text-2xl font-bold accent-text">
+                  {client.name[0]}
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : myClients.length === 0 ? (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <div className="bg-muted/50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Users className="w-8 h-8 text-muted-foreground" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2">Aucun client</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Commencez par ajouter votre premier client
-            </p>
-            <Button onClick={() => setIsDialogOpen(true)} data-testid="button-add-first-client">
+                <div className="flex-1">
+                  <h3 className="font-semibold text-lg">{client.name}</h3>
+                  <p className="text-sm text-secondary">{client.email}</p>
+                  <p className="text-xs text-secondary mt-1">{client.lastActivity}</p>
+                </div>
+              </div>
+
+              {/* Score */}
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm text-secondary">SynrgyScore™</span>
+                <span className={`text-2xl font-bold ${
+                  client.score >= 80 ? 'text-success' : 'accent-text'
+                }`}>
+                  {client.score}
+                </span>
+              </div>
+
+              {/* Progress bar */}
+              <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden mb-4">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${client.score}%` }}
+                  transition={{ duration: 1, delay: index * 0.1 + 0.3 }}
+                  className="h-full accent-bg"
+                />
+              </div>
+
+              {/* Actions */}
+              <div className="grid grid-cols-2 gap-2">
+                <ProButton
+                  size="sm"
+                  variant="secondary"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/coach/clients/${client.id}/program`);
+                  }}
+                >
+                  Programme
+                </ProButton>
+                <ProButton
+                  size="sm"
+                  variant="secondary"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/coach/clients/${client.id}/chat`);
+                  }}
+                >
+                  <MessageCircle className="w-3 h-3 mr-1" />
+                  Chat
+                </ProButton>
+              </div>
+            </ProCard>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Empty State */}
+      {filteredClients.length === 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center py-20"
+        >
+          <Users className="w-16 h-16 mx-auto mb-4 text-secondary" />
+          <h3 className="heading-3 mb-2">Aucun client trouvé</h3>
+          <p className="text-secondary mb-6">
+            {searchQuery ? 'Essaye une autre recherche' : 'Commence par ajouter ton premier client'}
+          </p>
+          {!searchQuery && (
+            <ProButton variant="primary" onClick={() => navigate('/coach/clients/new')}>
               <Plus className="w-4 h-4 mr-2" />
               Ajouter un client
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {myClients.map((client) => (
-            <Card key={client.id} className="hover-elevate" data-testid={`client-card-${client.id}`}>
-              <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0 pb-3">
-                <div className="flex items-center gap-3 flex-1">
-                  <Avatar className="w-16 h-16">
-                    <AvatarImage src={client.avatarUrl || undefined} />
-                    <AvatarFallback className="bg-primary text-primary-foreground">
-                      {getInitials(client.fullName)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <CardTitle className="text-lg truncate">{client.fullName}</CardTitle>
-                    <Badge variant="secondary" className="text-xs mt-1">
-                      Client
-                    </Badge>
-                  </div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => deleteClientMutation.mutate(client.id)}
-                  className="shrink-0"
-                  data-testid={`button-delete-client-${client.id}`}
-                >
-                  <Trash2 className="w-4 h-4 text-destructive" />
-                </Button>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <Mail className="w-4 h-4 text-muted-foreground" />
-                  <span className="truncate">{client.email}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <UserIcon className="w-4 h-4 text-muted-foreground" />
-                  <span>@{client.username}</span>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+            </ProButton>
+          )}
+        </motion.div>
       )}
     </div>
   );

@@ -18,6 +18,24 @@ export default {
         card: "var(--color-card)",
         muted: "var(--color-muted)",
         
+        // Premium Theme Colors
+        coach: {
+          bg: "#0D1117",
+          bgLight: "#161B22",
+          accent: "#FFD66B",
+          accentDark: "#E6C050",
+          text: "#F1F1F1",
+          textSecondary: "#8B949E",
+        },
+        client: {
+          bg: "#121418",
+          bgLight: "#1A1D23",
+          accent: "#8AFFC1",
+          accentDark: "#70E6A7",
+          text: "#F3F3F3",
+          textSecondary: "#9CA3AF",
+        },
+        
         primary: {
           DEFAULT: "var(--color-primary)",
           foreground: "var(--color-background)",

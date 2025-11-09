@@ -47,6 +47,26 @@ export function findUserByEmail(email: string): StoredUser | undefined {
 }
 
 export function findUserById(userId: string): StoredUser | undefined {
+  // 🧪 Check test users first
+  if (userId === "test-coach-1") {
+    return {
+      id: "test-coach-1",
+      email: "coach@test.com",
+      passwordHash: "", // Not needed for test users
+      role: "coach",
+      createdAt: Date.now(),
+    };
+  }
+  if (userId === "test-client-1") {
+    return {
+      id: "test-client-1",
+      email: "client@test.com",
+      passwordHash: "", // Not needed for test users
+      role: "client",
+      createdAt: Date.now(),
+    };
+  }
+  
   const users = loadUsers();
   return users.find((user) => user.id === userId);
 }

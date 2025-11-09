@@ -12,28 +12,33 @@ import {
 } from "drizzle-orm/pg-core";
 import { z } from "zod";
 
-// Users table (coaches and athletes)
+// Users table (coaches and clients)
 export const users: any = pgTable("users", {
   id: text("id").primaryKey().default(sql`gen_random_uuid()`),
   email: text("email").notNull().unique(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
   fullName: text("full_name").notNull(),
-  role: text("role", { enum: ["coach", "athlete"] }).notNull(),
+  role: text("role", { enum: ["coach", "client"] }).notNull(),
   avatarUrl: text("avatar_url"),
   isPro: boolean("is_pro").default(false),
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
   coachId: text("coach_id").references(() => users.id),
+  integrations: jsonb("integrations").$type<{
+    macrosToken?: string;
+    macrosRefreshToken?: string;
+    macrosExpiresAt?: string;
+  }>(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Client relationships (athletes linked to coaches)
+// Client relationships (clients linked to coaches)
 export const clients: any = pgTable("clients", {
   id: text("id").primaryKey().default(sql`gen_random_uuid()`),
   coachId: text("coach_id").notNull().references(() => users.id),
-  athleteId: text("athlete_id").notNull().references(() => users.id),
+  clientId: text("client_id").notNull().references(() => users.id),
   status: text("status", { enum: ["active", "paused", "inactive"] }).default("active"),
   startDate: timestamp("start_date").defaultNow(),
   endDate: timestamp("end_date"),
@@ -41,36 +46,52 @@ export const clients: any = pgTable("clients", {
   createdAt: timestamp("created_at").defaultNow(),
 }, (table) => ({
   coachIdx: index("clients_coach_idx").on(table.coachId),
-  athleteIdx: index("clients_athlete_idx").on(table.athleteId),
+  clientIdx: index("clients_client_idx").on(table.clientId),
 }));
 
-// Training plans
-export const trainingPlans = pgTable("training_plans", {
+// Programs (TrueCoach-style, simplified structure)
+export const programs = pgTable("programs", {
   id: text("id").primaryKey().default(sql`gen_random_uuid()`),
   coachId: text("coach_id").notNull().references(() => users.id),
-  name: text("name").notNull(),
-  description: text("description"),
-  type: text("type", { enum: ["strength", "hypertrophy", "endurance", "power", "custom"] }).notNull(),
-  duration: integer("duration_weeks").notNull(),
-  isTemplate: boolean("is_template").default(false),
-  isPublic: boolean("is_public").default(false),
-  tags: jsonb("tags").$type<string[]>(),
+  clientId: text("client_id").notNull().references(() => users.id),
+  title: text("title").notNull(),
+  blocks: jsonb("blocks").$type<{
+    dayIndex: number;
+    name: string;
+    exercises: {
+      id: string;
+      name: string;
+      sets: { reps: number; weight?: number; rir?: number }[];
+      notes?: string;
+    }[];
+  }[]>().default([]),
+  notes: text("notes"),
+  isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => ({
+  coachIdx: index("programs_coach_idx").on(table.coachId),
+  clientIdx: index("programs_client_idx").on(table.clientId),
+}));
 
-// Training sessions
-export const trainingSessions = pgTable("training_sessions", {
+// Sessions (Hevy-style workout logging)
+export const sessions = pgTable("sessions", {
   id: text("id").primaryKey().default(sql`gen_random_uuid()`),
-  planId: text("plan_id").notNull().references(() => trainingPlans.id),
-  athleteId: text("athlete_id").notNull().references(() => users.id),
-  name: text("name").notNull(),
-  scheduledDate: timestamp("scheduled_date").notNull(),
-  completedDate: timestamp("completed_date"),
-  status: text("status", { enum: ["scheduled", "in_progress", "completed", "skipped"] }).default("scheduled"),
+  clientId: text("client_id").notNull().references(() => users.id),
+  programId: text("program_id").references(() => programs.id),
+  date: timestamp("date").notNull().defaultNow(),
+  entries: jsonb("entries").$type<{
+    exerciseId: string;
+    exerciseName: string;
+    performedSets: { reps: number; weight?: number; rir?: number }[];
+  }[]>().default([]),
+  durationMin: integer("duration_min"),
+  rpeAvg: decimal("rpe_avg", { precision: 3, scale: 1 }),
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => ({
+  clientDateIdx: index("sessions_client_date_idx").on(table.clientId, table.date),
+}));
 
 // Exercises
 export const exercises = pgTable("exercises", {
@@ -86,32 +107,26 @@ export const exercises = pgTable("exercises", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Exercise logs (Heavy/Strong style)
-export const exerciseLogs = pgTable("exercise_logs", {
+// Feedbacks (daily client feedback)
+export const feedbacks = pgTable("feedbacks", {
   id: text("id").primaryKey().default(sql`gen_random_uuid()`),
-  sessionId: text("session_id").notNull().references(() => trainingSessions.id),
-  exerciseId: text("exercise_id").notNull().references(() => exercises.id),
-  athleteId: text("athlete_id").notNull().references(() => users.id),
-  sets: jsonb("sets").$type<{
-    weight: number;
-    reps: number;
-    rpe?: number;
-    rir?: number;
-    tempo?: string;
-    rest?: number;
-    notes?: string;
-  }[]>(),
-  totalVolume: decimal("total_volume", { precision: 10, scale: 2 }),
-  isPr: boolean("is_pr").default(false),
-  prType: text("pr_type"), // "weight", "reps", "volume"
-  completedAt: timestamp("completed_at").defaultNow(),
-});
+  clientId: text("client_id").notNull().references(() => users.id),
+  date: timestamp("date").notNull(),
+  sleepHours: decimal("sleep_hours", { precision: 3, scale: 1 }),
+  stressLevel: integer("stress_level"), // 1-10
+  sorenessLevel: integer("soreness_level"), // 1-10
+  energyLevel: integer("energy_level"), // 1-10
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  clientDateIdx: index("feedbacks_client_date_idx").on(table.clientId, table.date),
+}));
 
 // Nutrition plans
 export const nutritionPlans = pgTable("nutrition_plans", {
   id: text("id").primaryKey().default(sql`gen_random_uuid()`),
   coachId: text("coach_id").references(() => users.id),
-  athleteId: text("athlete_id").notNull().references(() => users.id),
+  clientId: text("client_id").notNull().references(() => users.id),
   name: text("name").notNull(),
   description: text("description"),
   targetCalories: integer("target_calories").notNull(),
@@ -171,51 +186,42 @@ export const mealFoodItems = pgTable("meal_food_items", {
   notes: text("notes"),
 });
 
-// Check-ins (TrueCoach style)
-export const checkIns = pgTable("check_ins", {
+// Food logs (imported from Macros, read-only)
+export const foodLogs = pgTable("food_logs", {
   id: text("id").primaryKey().default(sql`gen_random_uuid()`),
-  athleteId: text("athlete_id").notNull().references(() => users.id),
-  coachId: text("coach_id").references(() => users.id),
+  clientId: text("client_id").notNull().references(() => users.id),
   date: timestamp("date").notNull(),
-  mood: integer("mood"), // 1-10 scale
-  sleep: decimal("sleep", { precision: 3, scale: 1 }), // hours
-  stress: integer("stress"), // 1-10 scale
-  pain: integer("pain"), // 1-10 scale
-  motivation: integer("motivation"), // 1-10 scale
-  adherence: integer("adherence"), // 1-10 scale
-  energy: integer("energy"), // 1-10 scale
-  notes: text("notes"),
-  coachNotes: text("coach_notes"),
+  mealName: text("meal_name"),
+  calories: integer("calories"),
+  protein: decimal("protein", { precision: 6, scale: 2 }),
+  carbs: decimal("carbs", { precision: 6, scale: 2 }),
+  fat: decimal("fat", { precision: 6, scale: 2 }),
+  fiber: decimal("fiber", { precision: 6, scale: 2 }),
+  source: text("source").default("macros"),
+  rawData: jsonb("raw_data"),
+  syncedAt: timestamp("synced_at").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => ({
+  clientDateIdx: index("food_logs_client_date_idx").on(table.clientId, table.date),
+}));
 
-// Habits tracking
-export const habits = pgTable("habits", {
+// Message threads
+export const messageThreads = pgTable("message_threads", {
   id: text("id").primaryKey().default(sql`gen_random_uuid()`),
-  athleteId: text("athlete_id").notNull().references(() => users.id),
-  name: text("name").notNull(),
-  description: text("description"),
-  target: integer("target").notNull(), // daily target
-  unit: text("unit").notNull(), // "glasses", "steps", "minutes", etc.
-  color: text("color").default("#4ADE80"),
-  isActive: boolean("is_active").default(true),
+  coachId: text("coach_id").notNull().references(() => users.id),
+  clientId: text("client_id").notNull().references(() => users.id),
+  lastMessageAt: timestamp("last_message_at").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => ({
+  coachIdx: index("threads_coach_idx").on(table.coachId),
+  clientIdx: index("threads_client_idx").on(table.clientId),
+}));
 
-// Habit logs
-export const habitLogs = pgTable("habit_logs", {
-  id: text("id").primaryKey().default(sql`gen_random_uuid()`),
-  habitId: text("habit_id").notNull().references(() => habits.id),
-  athleteId: text("athlete_id").notNull().references(() => users.id),
-  date: timestamp("date").notNull(),
-  value: integer("value").notNull(),
-  notes: text("notes"),
-  createdAt: timestamp("created_at").defaultNow(),
-});
 
-// Messages (coach-athlete communication)
+// Messages (coach-client communication)
 export const messages = pgTable("messages", {
   id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+  threadId: text("thread_id").references(() => messageThreads.id),
   senderId: text("sender_id").notNull().references(() => users.id),
   recipientId: text("recipient_id").notNull().references(() => users.id),
   content: text("content").notNull(),
@@ -225,52 +231,13 @@ export const messages = pgTable("messages", {
   isAiGenerated: boolean("is_ai_generated").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 }, (table) => ({
+  threadIdx: index("messages_thread_idx").on(table.threadId),
   senderIdx: index("messages_sender_idx").on(table.senderId),
   recipientIdx: index("messages_recipient_idx").on(table.recipientId),
 }));
 
-// Tasks (coach tasks and athlete tasks)
-export const tasks = pgTable("tasks", {
-  id: text("id").primaryKey().default(sql`gen_random_uuid()`),
-  coachId: text("coach_id").references(() => users.id),
-  athleteId: text("athlete_id").references(() => users.id),
-  title: text("title").notNull(),
-  description: text("description"),
-  type: text("type", { enum: ["coach", "athlete", "ai_generated"] }).notNull(),
-  priority: text("priority", { enum: ["low", "medium", "high", "urgent"] }).default("medium"),
-  status: text("status", { enum: ["pending", "in_progress", "completed", "cancelled"] }).default("pending"),
-  dueDate: timestamp("due_date"),
-  completedAt: timestamp("completed_at"),
-  createdAt: timestamp("created_at").defaultNow(),
-});
 
-// Bookings (Cal integration)
-export const bookings = pgTable("bookings", {
-  id: text("id").primaryKey().default(sql`gen_random_uuid()`),
-  coachId: text("coach_id").notNull().references(() => users.id),
-  athleteId: text("athlete_id").notNull().references(() => users.id),
-  startTime: timestamp("start_time").notNull(),
-  endTime: timestamp("end_time").notNull(),
-  type: text("type", { enum: ["consultation", "check_in", "training", "nutrition"] }).notNull(),
-  status: text("status", { enum: ["scheduled", "confirmed", "completed", "cancelled", "no_show"] }).default("scheduled"),
-  notes: text("notes"),
-  videoUrl: text("video_url"),
-  meetingId: text("meeting_id"),
-  createdAt: timestamp("created_at").defaultNow(),
-});
 
-// Availability (coach availability)
-export const availability = pgTable("availability", {
-  id: text("id").primaryKey().default(sql`gen_random_uuid()`),
-  coachId: text("coach_id").notNull().references(() => users.id),
-  dayOfWeek: integer("day_of_week").notNull(), // 0-6 (Sunday-Saturday)
-  startTime: text("start_time").notNull(), // "09:00"
-  endTime: text("end_time").notNull(), // "17:00"
-  isRecurring: boolean("is_recurring").default(true),
-  specificDate: timestamp("specific_date"), // for one-time availability
-  isActive: boolean("is_active").default(true),
-  createdAt: timestamp("created_at").defaultNow(),
-});
 
 // Payments and subscriptions
 export const subscriptions = pgTable("subscriptions", {
@@ -307,34 +274,26 @@ export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 export type Client = typeof clients.$inferSelect;
 export type InsertClient = typeof clients.$inferInsert;
-export type TrainingPlan = typeof trainingPlans.$inferSelect;
-export type InsertTrainingPlan = typeof trainingPlans.$inferInsert;
-export type TrainingSession = typeof trainingSessions.$inferSelect;
-export type InsertTrainingSession = typeof trainingSessions.$inferInsert;
+export type Program = typeof programs.$inferSelect;
+export type InsertProgram = typeof programs.$inferInsert;
+export type Session = typeof sessions.$inferSelect;
+export type InsertSession = typeof sessions.$inferInsert;
 export type Exercise = typeof exercises.$inferSelect;
 export type InsertExercise = typeof exercises.$inferInsert;
-export type ExerciseLog = typeof exerciseLogs.$inferSelect;
-export type InsertExerciseLog = typeof exerciseLogs.$inferInsert;
+export type Feedback = typeof feedbacks.$inferSelect;
+export type InsertFeedback = typeof feedbacks.$inferInsert;
 export type NutritionPlan = typeof nutritionPlans.$inferSelect;
 export type InsertNutritionPlan = typeof nutritionPlans.$inferInsert;
 export type Meal = typeof meals.$inferSelect;
 export type InsertMeal = typeof meals.$inferInsert;
 export type FoodItem = typeof foodItems.$inferSelect;
 export type InsertFoodItem = typeof foodItems.$inferInsert;
-export type CheckIn = typeof checkIns.$inferSelect;
-export type InsertCheckIn = typeof checkIns.$inferInsert;
-export type Habit = typeof habits.$inferSelect;
-export type InsertHabit = typeof habits.$inferInsert;
-export type HabitLog = typeof habitLogs.$inferSelect;
-export type InsertHabitLog = typeof habitLogs.$inferInsert;
+export type FoodLog = typeof foodLogs.$inferSelect;
+export type InsertFoodLog = typeof foodLogs.$inferInsert;
+export type MessageThread = typeof messageThreads.$inferSelect;
+export type InsertMessageThread = typeof messageThreads.$inferInsert;
 export type Message = typeof messages.$inferSelect;
 export type InsertMessage = typeof messages.$inferInsert;
-export type Task = typeof tasks.$inferSelect;
-export type InsertTask = typeof tasks.$inferInsert;
-export type Booking = typeof bookings.$inferSelect;
-export type InsertBooking = typeof bookings.$inferInsert;
-export type Availability = typeof availability.$inferSelect;
-export type InsertAvailability = typeof availability.$inferInsert;
 export type Subscription = typeof subscriptions.$inferSelect;
 export type InsertSubscription = typeof subscriptions.$inferInsert;
 export type Media = typeof media.$inferSelect;
@@ -352,7 +311,7 @@ export const insertUserSchema = z.object({
   username: z.string().min(3),
   password: z.string().min(6),
   fullName: z.string().min(2),
-  role: z.enum(["coach", "athlete"]),
+  role: z.enum(["coach", "client"]),
 });
 
 export const loginSchema = z.object({

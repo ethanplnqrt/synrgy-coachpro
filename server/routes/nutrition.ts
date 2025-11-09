@@ -1,41 +1,234 @@
+/**
+ * 🥗 NUTRITION ROUTES
+ * 
+ * Endpoints for nutrition plans and Macros sync.
+ * GET /api/nutrition/plan/:clientId - Get nutrition plan
+ * PUT /api/nutrition/plan/:clientId - Update nutrition plan
+ * GET /api/nutrition/sync-macros - Get Macros auth URL
+ * POST /api/nutrition/sync-macros - Sync Macros data
+ * GET /api/nutrition/intake/:clientId - Get nutrition intake data
+ */
+
 import express from "express";
-import { v4 as uuidv4 } from "uuid";
-import { loadDB, saveDB } from "../utils/db.js";
-import { authenticate, type AuthenticatedRequest } from "../auth/authMiddleware.js";
+import { requireAuth } from "../auth/authMiddleware.js";
+import * as nutritionService from "../services/nutritionService.js";
+import * as macrosSyncService from "../services/macrosSyncService.js";
+import { getMacrosAuthURL, exchangeMacrosToken } from "../integrations/macros.js";
+import { db } from "../db.js";
+import { users } from "../../shared/schema.js";
+import { eq } from "drizzle-orm";
 
 const router = express.Router();
 
-router.use(authenticate);
+/**
+ * GET /api/nutrition/plan/:clientId
+ * Get active nutrition plan for a client
+ */
+router.get('/plan/:clientId', requireAuth, async (req, res) => {
+  try {
+    const { clientId } = req.params;
+    const user = req.user!;
 
-router.get("/", (req: AuthenticatedRequest, res) => {
-  const db = loadDB();
-  const user = req.user!;
-  const entries = db.nutrition
-    .filter((entry) => entry.userId === user.id)
-    .sort((a, b) => b.timestamp - a.timestamp);
+    // Access control
+    if (user.role === 'client' && user.id !== clientId) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
 
-  return res.json({ success: true, entries });
+    const plan = await nutritionService.getActiveNutritionPlan(clientId);
+
+    if (!plan) {
+      return res.status(404).json({ error: 'No active nutrition plan found' });
+    }
+
+    res.json(plan);
+  } catch (error: any) {
+    console.error('Error fetching nutrition plan:', error);
+    res.status(500).json({ error: error.message || 'Failed to fetch plan' });
+  }
 });
 
-router.post("/", (req: AuthenticatedRequest, res) => {
-  const { notes, calories, macros } = req.body || {};
+/**
+ * PUT /api/nutrition/plan/:clientId
+ * Create or update nutrition plan for a client
+ */
+router.put('/plan/:clientId', requireAuth, async (req, res) => {
+  try {
+    const { clientId } = req.params;
+    const planData = req.body;
+    const user = req.user!;
 
-  const db = loadDB();
-  const user = req.user!;
+    if (user.role !== 'coach') {
+      return res.status(403).json({ error: 'Only coaches can update nutrition plans' });
+    }
 
-  const entry = {
-    id: uuidv4(),
-    userId: user.id,
-    timestamp: Date.now(),
-    notes,
-    calories,
-    macros,
-  };
+    const plan = await nutritionService.createNutritionPlan(user.id, {
+      clientId,
+      ...planData,
+    });
 
-  db.nutrition.unshift(entry);
-  saveDB(db);
+    res.json(plan);
+  } catch (error: any) {
+    console.error('Error updating nutrition plan:', error);
+    res.status(500).json({ error: error.message || 'Failed to update plan' });
+  }
+});
 
-  return res.status(201).json({ success: true, entry });
+/**
+ * GET /api/nutrition/intake/:clientId?from=YYYY-MM-DD&to=YYYY-MM-DD
+ * Get nutrition intake data (from Macros sync)
+ */
+router.get('/intake/:clientId', requireAuth, async (req, res) => {
+  try {
+    const { clientId } = req.params;
+    const { from, to } = req.query;
+    const user = req.user!;
+
+    // Access control
+    if (user.role === 'client' && user.id !== clientId) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    // Default to last 7 days
+    const endDate = to as string || new Date().toISOString().split('T')[0];
+    const startDate = from as string || (() => {
+      const d = new Date();
+      d.setDate(d.getDate() - 7);
+      return d.toISOString().split('T')[0];
+    })();
+
+    const intake = await nutritionService.getNutritionIntake(clientId, startDate, endDate);
+
+    res.json(intake);
+  } catch (error: any) {
+    console.error('Error fetching nutrition intake:', error);
+    res.status(500).json({ error: error.message || 'Failed to fetch intake' });
+  }
+});
+
+/**
+ * GET /api/nutrition/adherence/:clientId
+ * Get nutrition adherence summary
+ */
+router.get('/adherence/:clientId', requireAuth, async (req, res) => {
+  try {
+    const { clientId } = req.params;
+    const user = req.user!;
+
+    // Access control
+    if (user.role === 'client' && user.id !== clientId) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    const adherence = await nutritionService.getNutritionAdherence(clientId);
+
+    res.json(adherence);
+  } catch (error: any) {
+    console.error('Error fetching adherence:', error);
+    res.status(500).json({ error: error.message || 'Failed to fetch adherence' });
+  }
+});
+
+/**
+ * GET /api/nutrition/macros/auth-url
+ * Get Macros OAuth authorization URL
+ */
+router.get('/macros/auth-url', requireAuth, async (req, res) => {
+  try {
+    const user = req.user!;
+
+    if (user.role !== 'client') {
+      return res.status(403).json({ error: 'Only clients can connect Macros' });
+    }
+
+    const authUrl = getMacrosAuthURL(user.id);
+
+    res.json({ authUrl });
+  } catch (error: any) {
+    console.error('Error generating Macros auth URL:', error);
+    res.status(500).json({ error: error.message || 'Failed to generate auth URL' });
+  }
+});
+
+/**
+ * POST /api/nutrition/macros/connect
+ * Exchange Macros authorization code for token
+ */
+router.post('/macros/connect', requireAuth, async (req, res) => {
+  try {
+    const { code } = req.body;
+    const user = req.user!;
+
+    if (user.role !== 'client') {
+      return res.status(403).json({ error: 'Only clients can connect Macros' });
+    }
+
+    if (!code) {
+      return res.status(400).json({ error: 'Authorization code required' });
+    }
+
+    // Exchange code for token
+    const tokenData = await exchangeMacrosToken(code);
+
+    // Store token in user integrations
+    await db
+      .update(users)
+      .set({
+        integrations: {
+          macrosToken: tokenData.access_token,
+          macrosRefreshToken: tokenData.refresh_token,
+          macrosExpiresAt: new Date(Date.now() + tokenData.expires_in * 1000).toISOString(),
+        } as any,
+      })
+      .where(eq(users.id, user.id));
+
+    res.json({ success: true, message: 'Macros connected successfully' });
+  } catch (error: any) {
+    console.error('Error connecting Macros:', error);
+    res.status(500).json({ error: error.message || 'Failed to connect Macros' });
+  }
+});
+
+/**
+ * POST /api/nutrition/macros/sync
+ * Sync nutrition data from Macros
+ */
+router.post('/macros/sync', requireAuth, async (req, res) => {
+  try {
+    const { date } = req.body;
+    const user = req.user!;
+
+    if (user.role !== 'client') {
+      return res.status(403).json({ error: 'Only clients can sync Macros' });
+    }
+
+    const result = await macrosSyncService.syncMacrosForClient(user.id, date);
+
+    res.json(result);
+  } catch (error: any) {
+    console.error('Error syncing Macros:', error);
+    res.status(500).json({ error: error.message || 'Failed to sync Macros' });
+  }
+});
+
+/**
+ * GET /api/nutrition/macros/history
+ * Get Macros sync history
+ */
+router.get('/macros/history', requireAuth, async (req, res) => {
+  try {
+    const user = req.user!;
+
+    if (user.role !== 'client') {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    const history = await macrosSyncService.getSyncHistory(user.id);
+
+    res.json(history);
+  } catch (error: any) {
+    console.error('Error fetching sync history:', error);
+    res.status(500).json({ error: error.message || 'Failed to fetch history' });
+  }
 });
 
 export default router;

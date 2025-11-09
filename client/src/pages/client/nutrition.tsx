@@ -1,219 +1,295 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import { Button } from '../../components/ui/button';
-import { Badge } from '../../components/ui/badge';
-import { 
-  Utensils, 
-  Clock, 
-  Target,
-  CheckCircle2,
-  Info
-} from 'lucide-react';
-import { PageWrapper } from '../../components/PageWrapper';
+/**
+ * 🍽 CLIENT NUTRITION PAGE
+ * 
+ * Nutrition plan + Macros sync integration.
+ * - View coach's nutrition plan
+ * - Connect Macros app
+ * - Sync and view imported data
+ * - Coherence report
+ */
 
-interface Meal {
-  id: string;
-  name: string;
-  time: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  foods: string[];
-}
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Apple, Link as LinkIcon, RefreshCw, TrendingUp } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ClientNutrition() {
-  // Mock nutrition data
-  const dailyTargets = {
-    calories: 2500,
-    protein: 150,
-    carbs: 300,
-    fat: 90
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [nutritionPlan, setNutritionPlan] = useState<any>(null);
+  const [macrosConnected, setMacrosConnected] = useState(false);
+  const [syncResult, setSyncResult] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
+
+  useEffect(() => {
+    fetchNutritionData();
+  }, []);
+
+  const fetchNutritionData = async () => {
+    try {
+      setLoading(true);
+
+      // Fetch nutrition plan
+      const planRes = await fetch(`/api/nutrition/plan/${user?.id}`, {
+        credentials: 'include',
+      });
+      if (planRes.ok) {
+        const data = await planRes.json();
+        setNutritionPlan(data);
+      }
+
+      // Check if Macros is connected
+      setMacrosConnected(!!user?.integrations?.macrosToken);
+    } catch (error) {
+      console.error('Error fetching nutrition data:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const meals: Meal[] = [
-    {
-      id: '1',
-      name: 'Petit-déjeuner',
-      time: '08:00',
-      calories: 450,
-      protein: 25,
-      carbs: 45,
-      fat: 18,
-      foods: ['Flocons d\'avoine', 'Banane', 'Lait d\'amande', 'Miel']
-    },
-    {
-      id: '2',
-      name: 'Déjeuner',
-      time: '13:00',
-      calories: 650,
-      protein: 45,
-      carbs: 60,
-      fat: 25,
-      foods: ['Poulet grillé', 'Riz complet', 'Brocolis', 'Huile d\'olive']
-    },
-    {
-      id: '3',
-      name: 'Goûter',
-      time: '16:00',
-      calories: 300,
-      protein: 20,
-      carbs: 35,
-      fat: 10,
-      foods: ['Fromage blanc', 'Fruits rouges', 'Noix']
-    },
-    {
-      id: '4',
-      name: 'Dîner',
-      time: '20:00',
-      calories: 700,
-      protein: 50,
-      carbs: 70,
-      fat: 30,
-      foods: ['Saumon', 'Patate douce', 'Salade verte', 'Avocat']
-    }
-  ];
+  const connectMacros = async () => {
+    try {
+      const res = await fetch('/api/nutrition/macros/auth-url', {
+        credentials: 'include',
+      });
 
-  const currentTotals = meals.reduce((acc, meal) => ({
-    calories: acc.calories + meal.calories,
-    protein: acc.protein + meal.protein,
-    carbs: acc.carbs + meal.carbs,
-    fat: acc.fat + meal.fat
-  }), { calories: 0, protein: 0, carbs: 0, fat: 0 });
+      if (res.ok) {
+        const { authUrl } = await res.json();
+        window.location.href = authUrl;
+      }
+    } catch (error) {
+      console.error('Error connecting Macros:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de se connecter à Macros',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const syncMacros = async () => {
+    try {
+      setSyncing(true);
+
+      const res = await fetch('/api/nutrition/macros/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          useMock: true, // Use mock data for demo
+        }),
+      });
+
+      if (res.ok) {
+        const result = await res.json();
+        setSyncResult(result);
+        toast({
+          title: 'Synchronisation réussie !',
+          description: `${result.entriesImported} entrées importées`,
+        });
+      }
+    } catch (error) {
+      console.error('Error syncing Macros:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Échec de la synchronisation',
+        variant: 'destructive',
+      });
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Chargement...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <PageWrapper className="min-h-screen bg-background p-6">
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <h1 className="text-3xl font-bold text-foreground">
-            Mon plan nutritionnel
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Plan personnalisé par ton coach Alexandre
-          </p>
-        </motion.div>
-
-        {/* Daily Targets */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <Card className="card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="w-5 h-5" />
-                Objectifs du jour
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-4 bg-surface rounded-lg">
-                  <p className="text-sm text-muted-foreground">Calories</p>
-                  <p className="text-2xl font-bold text-primary">{currentTotals.calories}/{dailyTargets.calories}</p>
-                </div>
-                <div className="text-center p-4 bg-surface rounded-lg">
-                  <p className="text-sm text-muted-foreground">Protéines</p>
-                  <p className="text-2xl font-bold text-secondary">{currentTotals.protein}g/{dailyTargets.protein}g</p>
-                </div>
-                <div className="text-center p-4 bg-surface rounded-lg">
-                  <p className="text-sm text-muted-foreground">Glucides</p>
-                  <p className="text-2xl font-bold text-info">{currentTotals.carbs}g/{dailyTargets.carbs}g</p>
-                </div>
-                <div className="text-center p-4 bg-surface rounded-lg">
-                  <p className="text-sm text-muted-foreground">Lipides</p>
-                  <p className="text-2xl font-bold text-warning">{currentTotals.fat}g/{dailyTargets.fat}g</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Meals */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="space-y-4"
-        >
-          {meals.map((meal, index) => (
-            <motion.div
-              key={meal.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 + index * 0.1 }}
-            >
-              <Card className="card">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center gap-2">
-                      <Clock className="w-4 h-4" />
-                      {meal.name}
-                    </CardTitle>
-                    <Badge className="badge-primary">
-                      {meal.time}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-4 gap-4 mb-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Calories</p>
-                      <p className="font-semibold text-foreground">{meal.calories}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Protéines</p>
-                      <p className="font-semibold text-secondary">{meal.protein}g</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Glucides</p>
-                      <p className="font-semibold text-info">{meal.carbs}g</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Lipides</p>
-                      <p className="font-semibold text-warning">{meal.fat}g</p>
-                    </div>
-                  </div>
-                  <div className="border-t border-border pt-4">
-                    <p className="text-sm font-medium text-foreground mb-2">Aliments :</p>
-                    <div className="flex flex-wrap gap-2">
-                      {meal.foods.map((food, idx) => (
-                        <Badge key={idx} variant="outline" className="border-border">
-                          {food}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </motion.div>
-
-        {/* Tips */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-        >
-          <Card className="card bg-info/10 border-info/30">
-            <CardContent className="p-4 flex items-start gap-3">
-              <Info className="w-5 h-5 text-info flex-shrink-0" />
-              <div>
-                <p className="font-semibold text-foreground mb-1">💡 Conseil de ton coach</p>
-                <p className="text-sm text-muted-foreground">
-                  Hydrate-toi bien entre les repas. Pense à boire au moins 2L d'eau par jour pour optimiser ta récupération.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+    <div className="container mx-auto p-6 space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold text-primary">Nutrition</h1>
+        <p className="text-muted-foreground mt-1">Ton plan et tes données nutritionnelles</p>
       </div>
-    </PageWrapper>
+
+      {/* Nutrition Plan */}
+      {nutritionPlan ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Apple className="h-5 w-5" />
+              Plan Nutrition
+            </CardTitle>
+            <CardDescription>{nutritionPlan.name}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary">
+                  {nutritionPlan.targetCalories}
+                </div>
+                <div className="text-sm text-muted-foreground mt-1">Calories</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary">
+                  {nutritionPlan.targetProtein}g
+                </div>
+                <div className="text-sm text-muted-foreground mt-1">Protéines</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary">
+                  {nutritionPlan.targetCarbs}g
+                </div>
+                <div className="text-sm text-muted-foreground mt-1">Glucides</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary">
+                  {nutritionPlan.targetFat}g
+                </div>
+                <div className="text-sm text-muted-foreground mt-1">Lipides</div>
+              </div>
+            </div>
+
+            {nutritionPlan.description && (
+              <div className="mt-6 p-4 bg-accent rounded-lg">
+                <p className="text-sm">{nutritionPlan.description}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardContent className="text-center py-12">
+            <Apple className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-2">Aucun plan nutrition</h2>
+            <p className="text-muted-foreground">
+              Ton coach n'a pas encore créé de plan pour toi.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Macros Integration */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <LinkIcon className="h-5 w-5" />
+                Intégration Macros
+              </CardTitle>
+              <CardDescription>
+                Connecte Macros pour synchroniser automatiquement tes données
+              </CardDescription>
+            </div>
+            {macrosConnected ? (
+              <Badge variant="default">Connecté</Badge>
+            ) : (
+              <Badge variant="secondary">Non connecté</Badge>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {!macrosConnected ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground mb-4">
+                Connecte ton compte Macros pour importer automatiquement tes données nutritionnelles.
+              </p>
+              <Button onClick={connectMacros}>
+                <LinkIcon className="h-4 w-4 mr-2" />
+                Connecter Macros
+              </Button>
+            </div>
+          ) : (
+            <>
+              <Button onClick={syncMacros} disabled={syncing} className="w-full">
+                {syncing ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    Synchronisation...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Synchroniser maintenant
+                  </>
+                )}
+              </Button>
+
+              {syncResult && (
+                <div className="p-4 bg-accent rounded-lg space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">Dernière synchronisation</span>
+                    <span className="text-sm text-muted-foreground">
+                      {new Date(syncResult.date).toLocaleDateString('fr-FR')}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div>
+                      <div className="text-xl font-bold">{syncResult.totals.calories}</div>
+                      <div className="text-xs text-muted-foreground">Calories</div>
+                    </div>
+                    <div>
+                      <div className="text-xl font-bold">{syncResult.totals.protein}g</div>
+                      <div className="text-xs text-muted-foreground">Protéines</div>
+                    </div>
+                    <div>
+                      <div className="text-xl font-bold">{syncResult.totals.carbs}g</div>
+                      <div className="text-xs text-muted-foreground">Glucides</div>
+                    </div>
+                    <div>
+                      <div className="text-xl font-bold">{syncResult.totals.fat}g</div>
+                      <div className="text-xs text-muted-foreground">Lipides</div>
+                    </div>
+                  </div>
+
+                  {syncResult.coherenceReport && (
+                    <div className="mt-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Adhérence</span>
+                        <span className="text-sm font-bold">{syncResult.coherenceReport.adherence}%</span>
+                      </div>
+                      <Progress value={syncResult.coherenceReport.adherence} />
+                      <p className="text-sm text-muted-foreground">
+                        {syncResult.coherenceReport.recommendation}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Tips */}
+      <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
+        <CardContent className="pt-6">
+          <div className="flex items-start gap-4">
+            <TrendingUp className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
+            <div>
+              <h3 className="font-semibold mb-2">Astuce Synrgy</h3>
+              <p className="text-sm text-muted-foreground">
+                Pour de meilleurs résultats, synchronise tes données Macros quotidiennement. 
+                L'IA Synrgy analysera la cohérence entre ton plan et ta consommation réelle 
+                pour t'aider à atteindre tes objectifs plus rapidement.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

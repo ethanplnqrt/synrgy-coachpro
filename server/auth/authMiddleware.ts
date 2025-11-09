@@ -27,3 +27,5 @@ export function authenticate(req: AuthenticatedRequest, res: Response, next: Nex
   next();
 }
 
+// Alias for new routes consistency
+export const requireAuth = authenticate;

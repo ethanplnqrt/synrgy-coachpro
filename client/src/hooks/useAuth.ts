@@ -3,12 +3,17 @@ import { useAuthContext } from "@/contexts/AuthContext";
 export interface AuthUser {
   id: string;
   email: string;
-  role: "coach" | "client" | "athlete";
+  role: "coach" | "client";
   fullName?: string | null;
   avatarUrl?: string | null;
   isPro?: boolean;
   isClient?: boolean;
   coachId?: string | null;
+  integrations?: {
+    macrosToken?: string;
+    macrosRefreshToken?: string;
+    macrosExpiresAt?: string;
+  };
 }
 
 /**

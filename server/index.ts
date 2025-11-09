@@ -31,7 +31,6 @@ console.log("");
 
 // NOW import other modules (they will use the loaded env vars)
 import express from "express";
-import cors from "cors";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 
@@ -45,11 +44,24 @@ import referralsRouter from "./routes/referrals.js";
 import plansRouter from "./routes/plans.js";
 import checkinsRouter from "./routes/checkins.js";
 import codexRouter from "./routes/codex.js";
+import programsRouter from "./routes/programs.js";
+import sessionsRouter from "./routes/sessions.js";
+import feedbacksRouter from "./routes/feedbacks.js";
+import messagesRouter from "./routes/messages.js";
+import aiRouter from "./routes/ai.js";
+import aiRoutesNew from "./routes/ai.js";
 import { loadDB } from "./utils/db.js";
 import { verifyReferralSystem } from "./services/referralService.js";
 import { initializeStripe, verifyStripeConfig } from "./utils/stripe.js";
+import { errorHandler } from "./middleware/errorHandler.js";
+import { apiLimiter, authLimiter } from "./middleware/rateLimiter.js";
+import { helmetConfig, corsConfig } from "./middleware/security.js";
 
 const app = express();
+
+// Environment check
+const isProduction = process.env.NODE_ENV === 'production';
+console.log(`🚀 Mode: ${isProduction ? 'PRODUCTION' : 'DEVELOPMENT'}`);
 
 // Ensure database exists on startup
 loadDB();
@@ -60,26 +72,39 @@ initializeStripe();
 // Verify Stripe configuration (after dotenv loaded)
 verifyStripeConfig();
 
+// Log Stripe status with detailed verification
+import { logStripeStatus } from "./services/stripeService.js";
+logStripeStatus().catch(err => {
+  console.error('⚠️  Stripe verification failed:', err.message);
+});
+
 // Verify referral system on startup
 verifyReferralSystem().catch(console.error);
 
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  }),
-);
-app.options("*", cors({ origin: "http://localhost:5173", credentials: true }));
+// Security middleware
+app.use(helmetConfig);
+app.use(corsConfig);
+
+// Rate limiting on all API routes (disabled in development)
+if (process.env.NODE_ENV === 'production') {
+  app.use('/api/', apiLimiter);
+  console.log("✅ Rate limiting enabled (production mode)");
+} else {
+  console.log("⚠️  Rate limiting disabled (development mode)");
+}
+
 // Webhook route needs raw body for Stripe signature verification
 app.use("/api/payments/webhook", bodyParser.raw({ type: "application/json" }));
 
-app.use(bodyParser.json());
-app.use(cookieParser());
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(cookieParser({
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: 'strict',
+}));
 
 // API routes (priority)
-app.use("/api/auth", authRouter);
+app.use("/api/auth", authLimiter, authRouter);
 app.use("/api/chat", chatRouter);
 app.use("/api/nutrition", nutritionRouter);
 app.use("/api/goals", goalsRouter);
@@ -89,9 +114,19 @@ app.use("/api/referrals", referralsRouter);
 app.use("/api/plans", plansRouter);
 app.use("/api/checkins", checkinsRouter);
 app.use("/api/codex", codexRouter);
+app.use("/api/programs", programsRouter);
+app.use("/api/sessions", sessionsRouter);
+app.use("/api/feedbacks", feedbacksRouter);
+app.use("/api/messages", messagesRouter);
+app.use("/api/ai", aiRouter);
 
 app.get("/api/health", (_req, res) =>
-  res.json({ status: "ok", mode: "production", version: "v1.0" })
+  res.json({ 
+    status: "ok", 
+    mode: isProduction ? "production" : "development", 
+    version: "4.0.0",
+    timestamp: new Date().toISOString(),
+  })
 );
 
 // Serve React build from /dist
@@ -105,8 +140,12 @@ app.get("*", (_req, res) => {
   res.sendFile(path.join(distDir, "index.html"));
 });
 
+// Global error handler (must be last)
+app.use(errorHandler);
+
 const PORT = process.env.PORT || 5001;
 
 app.listen(PORT, () => {
-  console.log(`✅ Synrgy live on http://localhost:${PORT}`);
+  console.log(`✅ Synrgy ${isProduction ? 'PRODUCTION' : 'DEV'} live on http://localhost:${PORT}`);
+  console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
 });

@@ -1,219 +1,280 @@
-import { useLocation } from "wouter";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Dumbbell, Brain, TrendingUp, Users, Zap, Heart, CheckCircle, ArrowRight } from "lucide-react";
-import { motion } from "framer-motion";
+/**
+ * 🏠 LANDING PAGE
+ * 
+ * Premium landing experience with gold accents and smooth animations.
+ * "Train Smart. Live Synrgy."
+ */
+
+import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { GlowButton } from '@/components/GlowButton';
+import { AnimatedCard } from '@/components/AnimatedCard';
+import LanguageSelector from '@/components/LanguageSelector';
+import { Dumbbell, Brain, TrendingUp, Sparkles, Users, Apple } from 'lucide-react';
 
 export default function Landing() {
-  const [, setLocation] = useLocation();
+  const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const features = [
     {
+      icon: Dumbbell,
+      title: t('landing.features.hevy.title'),
+      description: t('landing.features.hevy.description'),
+    },
+    {
+      icon: Apple,
+      title: t('landing.features.macros.title'),
+      description: t('landing.features.macros.description'),
+    },
+    {
       icon: Brain,
-      title: "Coach IA Personnalisé",
-      description: "Un assistant intelligent qui comprend ton profil et s'adapte à ta progression",
-      gradient: "from-purple-500 to-blue-500"
+      title: t('landing.features.ai.title'),
+      description: t('landing.features.ai.description'),
     },
     {
       icon: TrendingUp,
-      title: "Suivi de Performance",
-      description: "Analytics en temps réel de tes entraînements, nutrition et progression",
-      gradient: "from-orange-500 to-red-500"
+      title: t('landing.features.truecoach.title'),
+      description: t('landing.features.truecoach.description'),
     },
     {
       icon: Users,
-      title: "Gestion de Clients",
-      description: "Pour les coachs : gérez vos athlètes, programmes et communications",
-      gradient: "from-green-500 to-teal-500"
+      title: t('landing.features.referral.title'),
+      description: t('landing.features.referral.description'),
     },
     {
-      icon: Zap,
-      title: "Programmes Adaptatifs",
-      description: "Plans d'entraînement et nutrition qui évoluent avec tes résultats",
-      gradient: "from-yellow-500 to-orange-500"
+      icon: Sparkles,
+      title: t('landing.features.premium.title'),
+      description: t('landing.features.premium.description'),
     },
-  ];
-
-  const benefits = [
-    "Authentification sécurisée avec JWT",
-    "Chat IA illimité avec contexte",
-    "Historique complet de tes sessions",
-    "Interface moderne et responsive",
-    "3 profils adaptés : Coach, Client, Athlète",
-    "Données privées et sécurisées"
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+    <div className="min-h-screen bg-background">
+      {/* Language Selector - Top Right */}
+      <div className="fixed top-6 right-6 z-50">
+        <LanguageSelector />
+      </div>
+
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10" />
+      <section className="relative overflow-hidden py-20 md:py-32">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-success/5" />
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-20">
+        <div className="container mx-auto px-6 relative z-10">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center"
+            transition={{ duration: 0.8 }}
+            className="text-center max-w-4xl mx-auto"
           >
-            <Badge className="mb-6 text-lg px-6 py-2" variant="secondary">
-              <Zap className="w-4 h-4 mr-2" />
-              Plateforme de coaching nouvelle génération
-            </Badge>
-            
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent">
-              Synrgy
+            {/* Logo */}
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.6 }}
+              className="mb-8"
+            >
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-success/20 border border-primary/30 mb-6">
+                <span className="text-4xl font-light text-gradient-gold">S</span>
+              </div>
+            </motion.div>
+
+            {/* Title */}
+            <h1 className="text-5xl md:text-7xl font-light mb-6">
+              <span className="text-gradient-gold">SYNRGY</span>
             </h1>
             
-            <p className="text-xl md:text-2xl text-muted-foreground mb-4">
-              Ton coach IA personnel pour une progression optimale
-            </p>
-            
-            <p className="text-lg text-muted-foreground mb-12 max-w-2xl mx-auto">
-              Que tu sois coach professionnel, client accompagné ou athlète indépendant,
-              Synrgy s'adapte à ton profil avec une IA intelligente et empathique.
-            </p>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="text-xl md:text-2xl text-text-secondary mb-12 font-light tracking-wide"
+            >
+              {t('landing.hero.subtitle')}
+            </motion.p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
+            {/* CTA Buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="flex flex-col sm:flex-row gap-4 justify-center"
+            >
+              <GlowButton
+                onClick={() => navigate('/signup')}
                 size="lg"
-                className="text-lg px-8 py-6 bg-gradient-to-r from-primary to-secondary hover:opacity-90"
-                onClick={() => setLocation("/pricing")}
               >
-                Découvrir les formules
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-              
-              <Button
+                {t('landing.cta.start')}
+              </GlowButton>
+              <GlowButton
+                onClick={() => navigate('/login')}
+                variant="ghost"
                 size="lg"
-                variant="outline"
-                className="text-lg px-8 py-6"
-                onClick={() => setLocation("/login")}
+                className="border border-primary/50"
               >
-                Se connecter
-              </Button>
-            </div>
+                {t('landing.cta.signin')}
+              </GlowButton>
+            </motion.div>
+
+            {/* Social Proof */}
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.8 }}
+              className="mt-12 text-sm text-text-secondary"
+            >
+              Trusted by coaches and athletes who demand excellence.
+            </motion.p>
           </motion.div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-4">
-        <div className="max-w-7xl mx-auto">
+      <section className="py-20 bg-gradient-to-b from-transparent to-surface/30">
+        <div className="container mx-auto px-6">
           <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl font-bold mb-4">Pourquoi choisir Synrgy ?</h2>
-            <p className="text-xl text-muted-foreground">
-              Une plateforme complète pour transformer ta passion en résultats
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {features.map((feature, index) => (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Card className="h-full hover:shadow-lg transition-shadow">
-                  <CardHeader>
-                    <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-4`}>
-                      <feature.icon className="w-6 h-6 text-white" />
-                    </div>
-                    <CardTitle className="text-xl">{feature.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <CardDescription className="text-base">
-                      {feature.description}
-                    </CardDescription>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Benefits Section */}
-      <section className="py-20 px-4 bg-muted/30">
-        <div className="max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-4xl font-bold mb-4">Tout ce dont tu as besoin</h2>
-            <p className="text-xl text-muted-foreground">
-              Une plateforme complète pour coaches et athlètes
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            {benefits.map((benefit, index) => (
-              <motion.div
-                key={benefit}
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="flex items-center gap-3 p-4 rounded-lg bg-background"
-              >
-                <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0" />
-                <span className="text-lg">{benefit}</span>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-32 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-5xl font-bold mb-6">
-              Prêt à transformer ta progression ?
+            <h2 className="text-3xl md:text-4xl font-light text-gradient-gold mb-4 uppercase tracking-wider">
+              {t('landing.features.title')}
             </h2>
-            <p className="text-xl text-muted-foreground mb-12">
-              Rejoins Synrgy et découvre une nouvelle façon de t'entraîner avec l'IA
+            <p className="text-text-secondary text-lg max-w-2xl mx-auto">
+              {t('landing.features.subtitle')}
             </p>
-            
-            <Button
-              size="lg"
-              className="text-xl px-12 py-8 bg-gradient-to-r from-primary to-secondary hover:opacity-90"
-              onClick={() => setLocation("/pricing")}
-            >
-              <Dumbbell className="mr-3 w-6 h-6" />
-              Commencer maintenant
-            </Button>
           </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {features.map((feature, index) => (
+              <AnimatedCard key={index} delay={index * 0.1} hover={true}>
+                <div className="flex flex-col items-start gap-4">
+                  <div className="p-3 rounded-xl bg-primary/10 border border-primary/20">
+                    <feature.icon className="w-6 h-6 text-primary" strokeWidth={1.5} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-medium text-text-primary mb-2">
+                      {feature.title}
+                    </h3>
+                    <p className="text-text-secondary leading-relaxed">
+                      {feature.description}
+                    </p>
+                  </div>
+                </div>
+              </AnimatedCard>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section className="py-20">
+        <div className="container mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl md:text-4xl font-light text-gradient-gold mb-4 uppercase tracking-wider">
+              {t('landing.pricing.title')}
+            </h2>
+            <p className="text-text-secondary text-lg">
+              {t('landing.pricing.subtitle')}
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            {/* Coach Plan */}
+            <AnimatedCard delay={0.2}>
+              <div className="text-center p-8">
+                <div className="mb-6">
+                  <Users className="w-12 h-12 text-primary mx-auto mb-4" strokeWidth={1.5} />
+                  <h3 className="text-2xl font-medium mb-2">{t('landing.pricing.coach.title')}</h3>
+                  <p className="text-text-secondary">{t('landing.pricing.coach.subtitle')}</p>
+                </div>
+                <div className="mb-8">
+                  <span className="text-5xl font-light text-gradient-gold">{t('landing.pricing.coach.price')}</span>
+                  <span className="text-text-secondary">{t('landing.pricing.coach.period')}</span>
+                </div>
+                <ul className="space-y-3 mb-8 text-left">
+                  <li className="flex items-center gap-2 text-text-secondary">
+                    <span className="text-primary">✓</span> {t('landing.pricing.coach.features.clients')}
+                  </li>
+                  <li className="flex items-center gap-2 text-text-secondary">
+                    <span className="text-primary">✓</span> {t('landing.pricing.coach.features.builder')}
+                  </li>
+                  <li className="flex items-center gap-2 text-text-secondary">
+                    <span className="text-primary">✓</span> {t('landing.pricing.coach.features.insights')}
+                  </li>
+                  <li className="flex items-center gap-2 text-text-secondary">
+                    <span className="text-primary">✓</span> {t('landing.pricing.coach.features.earnings')}
+                  </li>
+                </ul>
+                <GlowButton
+                  onClick={() => navigate('/signup?role=coach')}
+                  className="w-full"
+                >
+                  {t('landing.pricing.coach.cta')}
+                </GlowButton>
+              </div>
+            </AnimatedCard>
+
+            {/* Client Plan */}
+            <AnimatedCard delay={0.3}>
+              <div className="text-center p-8">
+                <div className="mb-6">
+                  <Dumbbell className="w-12 h-12 text-success mx-auto mb-4" strokeWidth={1.5} />
+                  <h3 className="text-2xl font-medium mb-2">{t('landing.pricing.client.title')}</h3>
+                  <p className="text-text-secondary">{t('landing.pricing.client.subtitle')}</p>
+                </div>
+                <div className="mb-8">
+                  <span className="text-5xl font-light text-success">{t('landing.pricing.client.price')}</span>
+                  <span className="text-text-secondary">{t('landing.pricing.client.period')}</span>
+                </div>
+                <ul className="space-y-3 mb-8 text-left">
+                  <li className="flex items-center gap-2 text-text-secondary">
+                    <span className="text-success">✓</span> {t('landing.pricing.client.features.logging')}
+                  </li>
+                  <li className="flex items-center gap-2 text-text-secondary">
+                    <span className="text-success">✓</span> {t('landing.pricing.client.features.sync')}
+                  </li>
+                  <li className="flex items-center gap-2 text-text-secondary">
+                    <span className="text-success">✓</span> {t('landing.pricing.client.features.ai')}
+                  </li>
+                  <li className="flex items-center gap-2 text-text-secondary">
+                    <span className="text-success">✓</span> {t('landing.pricing.client.features.discount')}
+                  </li>
+                </ul>
+                <GlowButton
+                  onClick={() => navigate('/signup?role=client')}
+                  className="w-full bg-success hover:bg-success/90"
+                >
+                  {t('landing.pricing.client.cta')}
+                </GlowButton>
+              </div>
+            </AnimatedCard>
+          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t py-12 px-4">
-        <div className="max-w-7xl mx-auto text-center text-muted-foreground">
-          <p className="flex items-center justify-center gap-2">
-            <Heart className="w-4 h-4 text-red-500" />
-            Synrgy - Hybrid Energy
-          </p>
-          <p className="mt-2 text-sm">
-            Intelligence artificielle au service de ta performance
-          </p>
+      <footer className="py-12 border-t border-border">
+        <div className="container mx-auto px-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-text-secondary text-sm">
+              {t('landing.footer.copyright')}
+            </p>
+            <p className="text-primary text-sm font-medium tracking-wider uppercase">
+              {t('landing.footer.tagline')}
+            </p>
+          </div>
         </div>
       </footer>
     </div>
   );
 }
-

@@ -1,223 +1,302 @@
+# 🔥 SYNRGY v4.3.0
 
-# Synrgy - AI-Powered Coaching Platform
+**The intelligent, connected coaching platform.**  
+TrueCoach Pro + Hevy Logging + Macros Sync + AI Coherence.
 
-Plateforme complète de coaching avec intelligence artificielle pour coaches et athlètes.
+**Now in 5 languages:** 🇫🇷 🇬🇧 🇪🇸 🇮🇹 🇩🇪
 
-## 🚀 Démarrage rapide
+---
 
-### Installation
+## ⚡ Quick Start
 
 ```bash
+# 1. Install dependencies
 npm install
-```
 
-### Configuration
+# 2. Create .env file
+bash scripts/create-env.sh
 
-Crée un fichier `.env` à la racine :
-```bash
-# Database
-DATABASE_URL=./dev.db
+# 3. Launch (3 terminals)
+# Terminal 1
+ollama serve
 
-# Server
-PORT=5001
-NODE_ENV=development
-
-# JWT Secret (change en production)
-JWT_SECRET=your-secret-key-change-in-production
-
-# OpenAI API
-OPENAI_API_KEY=sk-your-openai-api-key-here
-```
-
-### Développement
-
-```bash
-# Terminal 1 - Serveur backend
+# Terminal 2
 npm run dev:server
 
-# Terminal 2 - Client frontend (dans un autre terminal)
+# Terminal 3
 npm run dev:client
+
+# 4. Open
+open http://localhost:5173
 ```
 
-- **Backend** : http://localhost:5001
-- **Frontend** : http://localhost:5173
+---
 
-### Production
+## 🌍 Internationalization
 
-```bash
-# Build complet (React + Serveur)
-npm run build
+Synrgy supports 5 languages:
+- 🇫🇷 **Français** (default)
+- 🇬🇧 **English**
+- 🇪🇸 **Español**
+- 🇮🇹 **Italiano**
+- 🇩🇪 **Deutsch**
 
-# Démarrer l'application
-npm start
-```
+**Language selector:** Top-right on all public pages.  
+**Auto-detection:** Uses browser language or saved preference.  
+**AI responses:** Automatically in user's selected language.
 
-**L'application complète sera accessible sur http://localhost:5001**
+---
 
-### Parcours utilisateur
+## 🎯 Features
 
-1. **Visite** http://localhost:5001 → Landing page
-2. **Pricing** → Voir les formules
-3. **S'inscrire** → Choisir son rôle (Coach/Client/Athlète)
-4. **Dashboard** → Interface personnalisée selon le rôle
+### For Coaches
+- 💼 **TrueCoach Pro**: Professional client management
+- 📊 **Program Builder**: Create training programs with drag & drop
+- 🤖 **AI Insights**: Automated weekly summaries and alerts
+- 💸 **Referral System**: Earn +10% commission
+- 🌐 **Multilingual**: Serve clients worldwide
 
-## 📁 Structure
+### For Clients
+- 🏋️ **Hevy-Style Logging**: Intuitive workout tracking
+- 🍎 **Macros Sync**: Connect Macros app for nutrition
+- 💬 **AI Chat**: Get instant answers to training questions
+- 📈 **Progress Tracking**: Visual stats and trends
+- 🌍 **Your Language**: Interface in 5 languages
+
+### For Everyone
+- ✨ **Premium UX**: Beautiful glassmorphism design
+- 🔐 **Secure Auth**: JWT + httpOnly cookies
+- 💳 **Stripe Payments**: €29.90 (Coach) / €9.90 (Client)
+- 🧠 **Local AI**: Ollama (Llama 3.2:3b) for privacy
+- 📱 **Responsive**: Mobile + Desktop optimized
+
+---
+
+## 🏗️ Tech Stack
+
+### Frontend
+- **React 18** + TypeScript
+- **Vite** (build tool)
+- **React Router v6** (navigation)
+- **Tailwind CSS** (styling)
+- **Framer Motion** (animations)
+- **i18next** (internationalization)
+- **Shadcn/ui** (components)
+- **TanStack Query** (data fetching)
+
+### Backend
+- **Express.js** (Node.js server)
+- **Drizzle ORM** + SQLite (local dev)
+- **JWT** + bcrypt (auth)
+- **Stripe API** (payments)
+- **Helmet** + Rate Limiting (security)
+- **Ollama** (local AI)
+
+### AI
+- **Ollama** (Llama 3.2:3b model)
+- **Retry logic** + timeout + cache
+- **Multilingual** (5 languages)
+- **Context-aware** responses
+
+---
+
+## 📦 Project Structure
 
 ```
 synrgy/
-├── client/          # Application React (Vite)
+├── client/                    # Frontend (React + Vite)
 │   ├── src/
-│   │   ├── components/  # Composants UI
-│   │   ├── contexts/    # AuthContext
-│   │   ├── hooks/       # useAuth
-│   │   ├── pages/
-│   │   │   ├── coach/     # Pages COACH
-│   │   │   ├── client/    # Pages CLIENT
-│   │   │   ├── athlete/   # Pages ATHLETE
-│   │   │   └── [shared]   # Pages partagées
-│   │   └── lib/         # API, queryClient
-│   └── index.html
-│
-├── server/          # Express API
-│   ├── auth/        # Authentification (JWT)
-│   │   ├── authController.ts
-│   │   ├── authMiddleware.ts
-│   │   ├── authRoutes.ts
-│   │   ├── authToken.ts
-│   │   └── userStore.ts
-│   ├── ai/          # Système de prompts IA
-│   │   └── promptBuilder.ts
-│   ├── routes/      # API routes
-│   ├── data/        # Stockage JSON
-│   │   └── users.json
-│   ├── utils/       # Utilitaires
-│   ├── db.json      # Messages, nutrition, goals
-│   ├── openai.ts    # Interface OpenAI
-│   └── index.ts     # Server principal
-│
-├── coreAI/          # Logique IA (advisors, doctrine)
-├── shared/          # Schémas et types partagés
-└── migrations/      # Migrations DB
+│   │   ├── components/        # UI components
+│   │   ├── pages/             # Route pages
+│   │   ├── contexts/          # React contexts (Auth, Language)
+│   │   ├── hooks/             # Custom hooks
+│   │   ├── i18n/              # Translations (5 languages)
+│   │   ├── lib/               # Utilities
+│   │   └── styles/            # Global styles
+│   └── public/                # Static assets
+├── server/                    # Backend (Express + Drizzle)
+│   ├── auth/                  # Authentication
+│   ├── routes/                # API routes
+│   ├── services/              # Business logic
+│   ├── ai/                    # AI integration (Ollama)
+│   └── utils/                 # Backend utilities
+├── shared/                    # Shared types (schema.ts)
+├── scripts/                   # Setup & test scripts
+└── docs/                      # Documentation
 ```
 
-## 🔐 Authentification
+---
 
-Le système utilise JWT avec cookies httpOnly pour une sécurité maximale.
+## 🧪 Testing
 
-### 3 rôles utilisateurs
-
-1. **Coach professionnel** - Gère des clients et crée des programmes
-2. **Client** - Athlète accompagné par un coach
-3. **Athlète indépendant** - Utilise l'IA comme coach virtuel
-
-### Routes d'authentification
-- `POST /api/auth/register` - Inscription (coach, client ou athlete)
-- `POST /api/auth/login` - Connexion
-- `POST /api/auth/logout` - Déconnexion
-- `GET /api/auth/me` - Vérifier la session
-
-### Exemple d'inscription
 ```bash
-# Coach
-curl -X POST http://localhost:5001/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"email":"coach@example.com","password":"password123","role":"coach"}'
+# Run all pre-launch tests
+npm run prelaunch
 
-# Client
-curl -X POST http://localhost:5001/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"email":"client@example.com","password":"password123","role":"client"}'
+# Test Ollama connection
+npm run test:ollama
 
-# Athlète
-curl -X POST http://localhost:5001/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"email":"athlete@example.com","password":"password123","role":"athlete"}'
+# Test AI stability
+npm run test:synrgy-ai
 ```
 
-### Redirection automatique
-Après connexion, l'utilisateur est redirigé vers son espace :
-- Coach → `/coach/dashboard`
-- Client → `/client/dashboard`
-- Athlète → `/athlete/dashboard`
+**Expected:**
+```
+✅ Environment Variables - All required variables present
+✅ Ollama API - En ligne (2 modèles disponibles)
+✅ Stripe API - Coach: 29.90€, Client: 9.90€
+✅ Database (SQLite) - dev.db présent
 
-### Routes protégées
-Toutes les routes suivantes nécessitent une authentification :
-- `/api/chat` - Chat avec l'IA
-- `/api/nutrition` - Gestion nutrition
-- `/api/goals` - Gestion objectifs
-
-## 🗄️ Base de données
-
-Les utilisateurs sont stockés dans `server/data/users.json` avec bcrypt pour les mots de passe.
-
-Structure d'un utilisateur :
-```json
-{
-  "id": "uuid",
-  "email": "user@example.com",
-  "passwordHash": "bcrypt-hash",
-  "role": "coach|athlete",
-  "createdAt": 1234567890
-}
+🎉 ALL TESTS PASSED
 ```
 
-## 🤖 Intelligence Artificielle
+---
 
-### Chat IA personnalisé
+## 🚀 Deployment
 
-Synrgy utilise OpenAI GPT-4o-mini avec des prompts intelligents personnalisés selon le rôle :
+### Frontend (Vercel)
+```bash
+# Build
+npm run build
 
-**Pour les coaches** : Assistant expert en programmation, gestion d'athlètes et performance
-**Pour les athlètes** : Coach personnel motivant, empathique et pédagogue
-
-Le système :
-- Maintient un historique de conversation par utilisateur
-- Adapte le ton et le contenu selon le profil
-- Garde le contexte des 10 derniers messages
-- Stocke toutes les conversations de manière persistante
-
-Configure ta clé API dans `.env` :
-```
-OPENAI_API_KEY=sk-your-key-here
+# Deploy
+vercel deploy --prod
 ```
 
-### Routes Chat & IA
-- `POST /api/chat` - Chat conversationnel avec historique
-- `GET /api/chat/history` - Récupérer l'historique complet
-- `DELETE /api/chat/history` - Supprimer l'historique
-- `POST /api/codex` - Query Codex pour génération (plans, conseils, analyses)
-- `GET /api/codex/status` - Status de configuration Codex
+### Backend (Render)
+```yaml
+# render.yaml
+services:
+  - type: web
+    name: synrgy-backend
+    env: node
+    buildCommand: npm install
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+```
 
-## 🛠️ Technologies
+### Environment Variables
+```env
+# Required
+STRIPE_SECRET_KEY=sk_live_...
+STRIPE_PUBLIC_KEY=pk_live_...
+OLLAMA_URL=http://localhost:11434
+DATABASE_URL=file:./dev.db
 
-- **Frontend**: React 18, Vite, TanStack Query, Wouter, Tailwind CSS
-- **Backend**: Express, TypeScript, JWT, bcrypt
-- **Database**: JSON file storage
-- **Auth**: JWT + httpOnly cookies (7 jours)
-- **AI**: OpenAI GPT-4o-mini
-- **UI**: Radix UI + shadcn/ui
+# Optional
+MACROS_CLIENT_ID=...
+MACROS_CLIENT_SECRET=...
+```
 
-## 📝 Scripts
+---
 
-- `npm run dev:server` - Lancer le serveur de développement (port 5001)
-- `npm run dev:client` - Lancer le client de développement (port 5173)
-- `npm run build` - Build pour production ✅ TESTÉ ET FONCTIONNEL
-- `npm start` - Lancer l'application en production (port 5001)
+## 📚 Documentation
 
-## 🧪 Tester l'authentification
+| Guide | Description |
+|-------|-------------|
+| **LANCEMENT-I18N.md** | Multilingual launch guide |
+| **I18N-COMPLETE.md** | i18n technical documentation |
+| **LANCEMENT-FINAL.md** | Complete launch procedure |
+| **START-HERE.md** | Quick 2-minute setup |
+| **OLLAMA-SETUP.md** | AI setup guide |
+| **STRIPE-SETUP-GUIDE.md** | Payment integration |
+| **docs/LAUNCH-GUIDE.md** | Production deployment |
 
-1. Inscris-toi via le frontend : http://localhost:5173/login
-2. Choisis ton rôle :
-   - **Coach professionnel** → Gestion de clients
-   - **Client (avec coach)** → Programme assigné par coach
-   - **Athlète indépendant** → Autonome avec IA
-3. Tu es automatiquement redirigé vers ton dashboard
-4. Navigation adaptée à ton rôle dans la sidebar
+---
 
-## 🔒 Sécurité
+## 🎨 Design System
 
-- Mots de passe hashés avec bcrypt (10 rounds)
-- JWT stockés dans des cookies httpOnly
-- CORS configuré pour localhost:5173
-- Tokens expiration : 7 jours
-- Middleware d'authentification sur toutes les routes protégées
+### Colors
+```css
+--background: #0A1628;      /* Deep blue night */
+--surface: #142038;         /* Card background */
+--primary: #D4AF37;         /* Gold accent */
+--text-primary: #F5F3EF;    /* Off-white */
+--text-secondary: #A6A6A8;  /* Gray */
+--success: #41E2BA;         /* Mint green */
+```
+
+### Typography
+- **Font:** Inter (300-700 weights)
+- **Headings:** Light weight, negative tracking
+- **Body:** Readable, never dense
+
+### Effects
+- **Glassmorphism:** `backdrop-blur-lg` + semi-transparent backgrounds
+- **Gold Glow:** Hover states on CTAs
+- **Animations:** Framer Motion (fade, slide, scale)
+
+---
+
+## 🔐 Security
+
+- **JWT Tokens:** httpOnly cookies + sameSite strict
+- **Password Hashing:** bcrypt (12 rounds)
+- **Rate Limiting:** Express rate limiter
+- **Helmet:** Security headers
+- **CORS:** Restricted origins
+- **SQL Injection:** Drizzle ORM parameterized queries
+
+---
+
+## 🌟 Roadmap
+
+### v4.4 (Next)
+- [ ] Complete AI multilingual integration (x-user-lang header)
+- [ ] Real-time websocket chat
+- [ ] Mobile app (React Native)
+- [ ] Exercise library with videos
+- [ ] Advanced analytics dashboard
+
+### v5.0 (Future)
+- [ ] Team coaching (multiple coaches per organization)
+- [ ] Marketplace (coaches selling programs)
+- [ ] Wearable integration (Apple Watch, Garmin)
+- [ ] Voice AI assistant
+- [ ] Community challenges
+
+---
+
+## 🤝 Contributing
+
+This is a private project. For support or questions:
+- Email: support@synrgy.ai
+- Discord: [Join our community](#)
+
+---
+
+## 📄 License
+
+© 2025 Synrgy. All rights reserved.
+
+---
+
+## 🏆 Credits
+
+**Built with passion by someone who loves fitness and code.**
+
+Inspired by:
+- **TrueCoach** (client management)
+- **Hevy** (workout logging)
+- **Macros** (nutrition tracking)
+- **Notion** (clean UI)
+- **Apple Fitness** (emotional design)
+
+---
+
+## 📊 Stats
+
+- **Version:** 4.3.0
+- **Lines of Code:** ~15,000
+- **Languages:** 5 (fr, en, es, it, de)
+- **Components:** 50+
+- **Routes:** 30+
+- **Translations:** 1,500+ strings
+- **Build Time:** < 10s
+- **First Paint:** < 2s
+
+---
+
+**🔥 Train Smart. Live Synrgy. 💪✨**

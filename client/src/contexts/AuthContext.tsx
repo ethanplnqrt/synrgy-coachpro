@@ -4,12 +4,17 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 export interface AuthUser {
   id: string;
   email: string;
-  role: "coach" | "client" | "athlete";
+  role: "coach" | "client";
   fullName?: string | null;
   avatarUrl?: string | null;
   isPro?: boolean;
   isClient?: boolean;
   coachId?: string | null;
+  integrations?: {
+    macrosToken?: string;
+    macrosRefreshToken?: string;
+    macrosExpiresAt?: string;
+  };
 }
 
 interface AuthContextType {
@@ -17,7 +22,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, role: "coach" | "client" | "athlete") => Promise<void>;
+  register: (email: string, password: string, role: "coach" | "client", fullName?: string) => Promise<void>;
   logout: () => Promise<void>;
   getCurrentUser: () => Promise<AuthUser | null>;
 }
@@ -61,8 +66,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const register = async (email: string, password: string, role: "coach" | "client" | "athlete") => {
-    const response = await apiRequest("POST", "/api/auth/register", { email, password, role });
+  const register = async (email: string, password: string, role: "coach" | "client", fullName?: string) => {
+    const response = await apiRequest("POST", "/api/auth/register", { 
+      email, 
+      password, 
+      role,
+      fullName: fullName || email.split('@')[0],
+      username: email.split('@')[0] + Math.random().toString(36).slice(2, 6),
+    });
     const data = await response.json();
     
     if (data.user) {
