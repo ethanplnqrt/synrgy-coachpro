@@ -12,6 +12,7 @@
     "build": "npm run build:client && npm run build:server",
     "preview": "vite preview",
     "start": "NODE_ENV=production node dist/server/index.js",
+    "start:prod": "npm run build && npm run start",
     "prelaunch": "tsx scripts/prelaunch-test.ts",
     "test:ollama": "tsx scripts/test-ollama.ts",
     "test:synrgy-ai": "tsx scripts/test-synrgy-ai.ts",
