@@ -1,19 +1,23 @@
-// Load environment variables FIRST
-import dotenv from "dotenv";
+// Load environment variables FIRST (development only)
 import path from "path";
 
-// Force load .env from project root
-const envPath = path.resolve(process.cwd(), ".env");
-const result = dotenv.config({ path: envPath, override: true });
-
-// Verify .env loaded
-if (result.error) {
-  console.warn(`⚠️  Erreur lors du chargement du .env: ${result.error.message}`);
+// Only load .env in development (Render injects variables directly in production)
+if (process.env.NODE_ENV !== "production") {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const dotenv = require("dotenv");
+  const envPath = path.resolve(process.cwd(), ".env");
+  const result = dotenv.config({ path: envPath, override: false });
+  
+  if (result.error) {
+    console.warn(`⚠️  Erreur lors du chargement du .env: ${result.error.message}`);
+  } else {
+    console.log(`✅ Fichier .env chargé depuis : ${envPath} (development mode)\n`);
+  }
 } else {
-  console.log(`✅ Fichier .env chargé depuis : ${envPath}\n`);
+  console.log(`🚀 Production mode: Using Render environment variables\n`);
 }
 
-// Debug: Check Stripe keys immediately after dotenv
+// Debug: Check Stripe keys immediately after environment setup
 console.log("🔍 Vérification immédiate des variables Stripe dans process.env...");
 const stripeVarsCheck = {
   "Public Key": process.env.STRIPE_PUBLIC_KEY,
