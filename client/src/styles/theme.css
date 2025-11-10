@@ -1,0 +1,341 @@
+/**
+ * 🎨 SYNRGY THEME — PREMIUM DESIGN
+ * 
+ * Palette: Deep Blue / Gold / Ivory
+ * Philosophy: Passion, Precision, Performance
+ * Inspired by: Notion rigor, Apple Fitness emotion, Luxury sobriety
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ========================================
+   🎨 SYNRGY THEME SYSTEM
+   Premium theming for Coach & Client
+   ======================================== */
+
+/* Base theme variables */
+:root {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+@layer base {
+  :root {
+    /* Core Colors */
+    --background: #0B1321;        /* Bleu nuit profond */
+    --surface: #151E2F;           /* Bleu-gris cartes */
+    --primary: #D4AF37;           /* Or doux premium */
+    --text-primary: #F5F3EF;      /* Blanc cassé élégant */
+    --text-secondary: #A6A6A8;    /* Gris doux */
+    --success: #41E2BA;           /* Vert menthe */
+    --error: #FF7A7A;             /* Rouge corail subtil */
+    
+    /* Shadcn Mapping */
+    --foreground: #F5F3EF;
+    --card: #151E2F;
+    --card-foreground: #F5F3EF;
+    --popover: #151E2F;
+    --popover-foreground: #F5F3EF;
+    --primary-foreground: #0B1321;
+    --secondary: #1A2536;
+    --secondary-foreground: #F5F3EF;
+    --muted: #1A2536;
+    --muted-foreground: #A6A6A8;
+    --accent: #D4AF37;
+    --accent-foreground: #0B1321;
+    --destructive: #FF7A7A;
+    --destructive-foreground: #F5F3EF;
+    --border: rgba(212, 175, 55, 0.1);
+    --input: #1A2536;
+    --ring: #D4AF37;
+    --radius: 16px;
+    
+    /* Custom Variables */
+    --glow-gold: rgba(212, 175, 55, 0.6);
+    --glass-bg: rgba(21, 30, 47, 0.8);
+    --glass-border: rgba(212, 175, 55, 0.1);
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-[#F5F3EF] font-light;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    letter-spacing: -0.01em;
+  }
+
+  /* Typography Premium */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-normal tracking-tight;
+    letter-spacing: -0.02em;
+  }
+
+  h1 {
+    @apply text-4xl md:text-5xl;
+  }
+
+  h2 {
+    @apply text-2xl md:text-3xl uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  h3 {
+    @apply text-xl md:text-2xl;
+  }
+}
+
+@layer components {
+  /* Glassmorphism Card */
+  .glass-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .glass-card:hover {
+    border-color: rgba(212, 175, 55, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Gold Glow Button */
+  .btn-glow {
+    @apply relative overflow-hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-glow:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 24px var(--glow-gold);
+  }
+
+  .btn-glow::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(212, 175, 55, 0.3),
+      transparent
+    );
+    transition: left 0.6s;
+  }
+
+  .btn-glow:hover::before {
+    left: 100%;
+  }
+
+  /* AI Accent */
+  .ai-accent {
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(65, 226, 186, 0.1));
+    border: 1px solid rgba(212, 175, 55, 0.2);
+  }
+
+  /* Shimmer Effect */
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(212, 175, 55, 0.4),
+      transparent
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  /* Gold Gradient Text */
+  .text-gradient-gold {
+    background: linear-gradient(135deg, #D4AF37 0%, #F4D97D 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Smooth Reveal */
+  .reveal {
+    animation: reveal 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  @keyframes reveal {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+@layer utilities {
+  /* Scrollbar Styling */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: var(--surface);
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgba(212, 175, 55, 0.3);
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: rgba(212, 175, 55, 0.5);
+  }
+}
+
+/* ========================================
+   🎨 THEME SYSTEM v4.4.0
+   Coach vs Client Dynamic Theming
+   ======================================== */
+
+/* COACH THEME - Blue Night / Gold */
+.theme-coach {
+  --background: #0D1117;
+  --foreground: #F1F1F1;
+  --card: #161B22;
+  --accent-color: 255 214 107;
+}
+
+.theme-coach body {
+  background-color: #0D1117 !important;
+  color: #F1F1F1 !important;
+}
+
+/* CLIENT THEME - Anthracite / Mint */
+.theme-client {
+  --background: #121418;
+  --foreground: #F3F3F3;
+  --card: #1A1D23;
+  --accent-color: 138 255 193;
+}
+
+.theme-client body {
+  background-color: #121418 !important;
+  color: #F3F3F3 !important;
+}
+
+/* DEFAULT THEME (Landing, Auth) */
+.theme-default body {
+  background-color: #0B1321 !important;
+  color: #F5F3EF !important;
+}
+
+/* PREMIUM CARD SYSTEM */
+.pro-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pro-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: translateY(-2px);
+}
+
+/* Theme-specific card highlights */
+.theme-coach .pro-card:hover {
+  border-color: rgba(255, 214, 107, 0.3);
+  box-shadow: 0 8px 32px rgba(255, 214, 107, 0.1);
+}
+
+.theme-client .pro-card:hover {
+  border-color: rgba(138, 255, 193, 0.3);
+  box-shadow: 0 8px 32px rgba(138, 255, 193, 0.1);
+}
+
+/* TYPOGRAPHY SYSTEM */
+.heading-1 {
+  @apply text-3xl font-bold tracking-tight;
+}
+
+.heading-2 {
+  @apply text-2xl font-semibold tracking-tight;
+}
+
+.heading-3 {
+  @apply text-xl font-semibold;
+}
+
+.body-text {
+  @apply text-base leading-relaxed;
+}
+
+/* BUTTON SYSTEM */
+.btn-primary {
+  @apply px-4 py-2 rounded-xl font-semibold transition-all duration-200;
+  @apply hover:scale-105 active:scale-95;
+}
+
+.theme-coach .btn-primary {
+  background: linear-gradient(135deg, #FFD66B 0%, #E6C050 100%);
+  color: #0D1117;
+  box-shadow: 0 4px 16px rgba(255, 214, 107, 0.3);
+}
+
+.theme-coach .btn-primary:hover {
+  box-shadow: 0 6px 24px rgba(255, 214, 107, 0.4);
+}
+
+.theme-client .btn-primary {
+  background: linear-gradient(135deg, #8AFFC1 0%, #70E6A7 100%);
+  color: #121418;
+  box-shadow: 0 4px 16px rgba(138, 255, 193, 0.3);
+}
+
+.theme-client .btn-primary:hover {
+  box-shadow: 0 6px 24px rgba(138, 255, 193, 0.4);
+}
+
+/* ACCENT COLORS */
+.accent-text {
+  color: rgb(var(--accent-color));
+}
+
+.accent-border {
+  border-color: rgba(var(--accent-color), 0.3);
+}
+
+.accent-bg {
+  background-color: rgba(var(--accent-color), 0.1);
+}
+
+/* UTILITIES */
+.blur-glass {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.text-gradient-mint {
+  background: linear-gradient(135deg, #8AFFC1 0%, #70E6A7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

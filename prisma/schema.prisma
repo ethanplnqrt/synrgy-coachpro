@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int      @id @default(autoincrement())
+  email       String   @unique
+  password    String
+  role        Role     @default(CLIENT)
+  fullName    String?
+  clients     Client[] @relation("CoachClients")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Client {
+  id          Int            @id @default(autoincrement())
+  name        String
+  email       String         @unique
+  coach       User?          @relation("CoachClients", fields: [coachId], references: [id])
+  coachId     Int?
+  programs    Program[]
+  nutrition   NutritionPlan[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model Program {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
+  clientId    Int?
+  client      Client?   @relation(fields: [clientId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model NutritionPlan {
+  id          Int       @id @default(autoincrement())
+  clientId    Int?
+  client      Client?   @relation(fields: [clientId], references: [id])
+  calories    Int
+  protein     Int
+  carbs       Int
+  fat         Int
+  meals       String?   @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+enum Role {
+  COACH
+  CLIENT
+}
+

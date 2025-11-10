@@ -1,0 +1,248 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Poppins:wght@100..900&family=JetBrains+Mono:wght@100..800&display=swap');
+@import './styles/theme.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Override Tailwind with our dark theme */
+@layer base {
+  :root {
+    /* Synrgy Palette Raffinée - Bleu Profond / Blanc Cassé / Or */
+    --background: #0A1628;
+    --foreground: #F5F3EF;
+    --card: #142038;
+    --card-foreground: #F5F3EF;
+    --popover: #142038;
+    --popover-foreground: #F5F3EF;
+    --primary: #D4AF37;
+    --primary-foreground: #0A1628;
+    --secondary: #3B82F6;
+    --secondary-foreground: #F5F3EF;
+    --muted: #1E2F4D;
+    --muted-foreground: #9B9486;
+    --accent: #2DD4BF;
+    --accent-foreground: #0A1628;
+    --destructive: #EF4444;
+    --destructive-foreground: #F5F3EF;
+    --border: #1E2F4D;
+    --input: #1A2844;
+    --ring: #D4AF37;
+    --radius: 0.5rem;
+    --success: #10B981;
+    --warning: #F59E0B;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* Styles de base */
+* {
+  border-color: var(--border);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', system-ui, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Animations personnalisées */
+.fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Effets hover améliorés */
+.hover-scale {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Scrollbar personnalisée - Thème doré */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-secondary);
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #D4AF37, #B8941F);
+  border-radius: 8px;
+  border: 2px solid var(--background-secondary);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #E8C875, #D4AF37);
+}
+
+/* Micro-animations fluides Synrgy */
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(8px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes fadeInScale {
+  from { 
+    opacity: 0; 
+    transform: scale(0.96); 
+  }
+  to { 
+    opacity: 1; 
+    transform: scale(1); 
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes pulse-gold {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 20px 8px rgba(212, 175, 55, 0.2);
+  }
+}
+
+.animate-fade-in { 
+  animation: fadeIn .4s ease-out; 
+}
+
+.animate-fade-in-scale { 
+  animation: fadeInScale .35s ease-out; 
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft .4s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight .4s ease-out;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.1), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+.animate-pulse-gold {
+  animation: pulse-gold 2s ease-in-out infinite;
+}
+
+/* Soft hover scale for interactive elements */
+.soft-hover { 
+  transition: transform .2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow .25s ease; 
+}
+
+.soft-hover:hover { 
+  transform: translateY(-2px) scale(1.01); 
+  box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.3), 0 4px 8px -2px rgba(212, 175, 55, 0.1);
+}
+
+/* Ripple effect for buttons */
+@keyframes ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+.ripple {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  transform: scale(0);
+  animation: ripple 0.4s linear;
+  pointer-events: none;
+}
+
+/* Enhanced transitions */
+.transition-all {
+  transition: all 0.2s ease-in-out;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.hover-glow:hover {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+}

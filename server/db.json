@@ -1,0 +1,20 @@
+{
+  "messages": [
+    {
+      "id": "4bc08fec-0b1e-4ad8-86cb-053e28af3a07",
+      "userId": "7c968db4-8a7f-4baa-b674-79d7c98ad4fe",
+      "role": "user",
+      "content": "Quels ajustements proposer après 6 semaines de déficit ?",
+      "timestamp": 1762066043740
+    },
+    {
+      "id": "99d24ba8-5cf4-4d33-9104-4c70d3ff82d9",
+      "userId": "7c968db4-8a7f-4baa-b674-79d7c98ad4fe",
+      "role": "assistant",
+      "content": "Erreur serveur IA.",
+      "timestamp": 1762066043741
+    }
+  ],
+  "nutrition": [],
+  "goals": []
+}

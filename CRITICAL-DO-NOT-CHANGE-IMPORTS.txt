@@ -1,0 +1,72 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️  CRITICAL: NE PAS CHANGER LES IMPORTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LES IMPORTS ACTUELS AVEC .js SONT DÉJÀ CORRECTS !
+
+❌ NE PAS changer: import x from "./routes/auth.js"
+❌ EN:              import x from "./routes/auth.ts"
+
+✅ GARDER: import x from "./routes/auth.js"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+POURQUOI ?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Synrgy utilise TypeScript + ES Modules (ESM).
+
+Avec ESM, les imports DOIVENT utiliser .js (même si les fichiers sont .ts).
+
+📖 TypeScript Documentation officielle:
+   "Use the extension your runtime will use. For ESM, this is .js"
+   https://www.typescriptlang.org/docs/handbook/modules.html
+
+📖 Convention Node.js + TypeScript:
+   - Fichiers sources:     .ts
+   - Imports dans code:    .js
+   - Fichiers compilés:    .js (dans dist/)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+COMMENT ÇA FONCTIONNE ?
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DÉVELOPPEMENT (npm run dev:server → tsx):
+  ✅ tsx résout automatiquement:
+     import x from "./routes/auth.js" → trouve auth.ts
+  ✅ Serveur démarre sans erreur
+
+PRODUCTION (npm run build → tsc, puis npm start → node):
+  ✅ tsc compile: auth.ts → dist/routes/auth.js
+  ✅ node exécute: trouve dist/routes/auth.js
+  ✅ Production fonctionne
+
+SI ON CHANGE EN .ts:
+  ❌ Développement: OK (tsx intelligent)
+  ❌ Production: CASSE (node cherche .ts mais trouve .js)
+  ❌ Erreur: Cannot find module './routes/auth.ts'
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STATUT ACTUEL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Tous les imports utilisent .js
+✅ Configuration ESM correcte
+✅ tsx résout .js → .ts automatiquement
+✅ Serveur peut démarrer (npm run dev:server)
+
+🟢 LES IMPORTS SONT DÉJÀ CORRECTS — NE RIEN MODIFIER
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ACTION IMMÉDIATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+NE PAS modifier les imports !
+
+LANCER LES TESTS DIRECTEMENT:
+
+Terminal 1:  npm run dev:server
+Terminal 2:  ./TEST-AUTH-ENDPOINTS.sh
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ IMPORTS CORRECTS — PASSER AUX TESTS

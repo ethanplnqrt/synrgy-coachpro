@@ -1,0 +1,28 @@
+<svg width="200" height="60" viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="synrgyGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#2563EB;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#06B6D4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8B5CF6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Texte "synrgy" -->
+  <text x="10" y="42" font-family="Montserrat, sans-serif" font-size="32" font-weight="700" fill="url(#synrgyGradient)" letter-spacing="-1px">
+    synrgy
+  </text>
+  
+  <!-- Y stylisé en boucle infinie -->
+  <g transform="translate(140, 15)">
+    <path d="M0,0 Q15,15 30,0 Q45,15 60,0 Q45,-15 30,0 Q15,-15 0,0" 
+          fill="url(#synrgyGradient)" 
+          stroke="url(#synrgyGradient)" 
+          stroke-width="2"/>
+    <circle cx="30" cy="0" r="3" fill="url(#synrgyGradient)"/>
+  </g>
+  
+  <!-- Tagline "Hybrid Energy" -->
+  <text x="10" y="55" font-family="Montserrat, sans-serif" font-size="10" font-weight="400" fill="#6B7280" letter-spacing="1px">
+    HYBRID ENERGY
+  </text>
+</svg>
