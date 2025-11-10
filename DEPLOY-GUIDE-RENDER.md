@@ -87,13 +87,13 @@ JWT_SECRET=votre_secret_jwt_tres_long_et_aleatoire_ici
 FRONTEND_URL=https://synrgy.vercel.app
 
 # Stripe LIVE Keys (depuis Stripe Dashboard)
-STRIPE_SECRET_KEY=sk_live_xxxxxxxxxxxxxxxxxxxxxxxx
-STRIPE_PUBLIC_KEY=pk_live_xxxxxxxxxxxxxxxxxxxxxxxx
-STRIPE_WEBHOOK_SECRET=whsec_xxxxxxxxxxxxxxxxxxxxxxxx
+STRIPE_SECRET_KEY=<votre_secret_key_live>
+STRIPE_PUBLIC_KEY=<votre_public_key_live>
+STRIPE_WEBHOOK_SECRET=<votre_webhook_secret>
 
 # Stripe Product Prices (LIVE mode)
-STRIPE_PRICE_CLIENT=price_xxxxxxxxxxxxxxxx
-STRIPE_PRICE_COACH=price_xxxxxxxxxxxxxxxx
+STRIPE_PRICE_CLIENT=<votre_price_id_client>
+STRIPE_PRICE_COACH=<votre_price_id_coach>
 
 # Ollama (optionnel, pour AI features)
 OLLAMA_URL=http://localhost:11434
@@ -116,8 +116,8 @@ OLLAMA_MODEL=llama3.2:3b
 2. **Activer Live Mode** (switch en haut à droite)
 3. Aller dans "**Developers**" → "**API Keys**"
 4. Copier:
-   - **Publishable key:** `pk_live_...`
-   - **Secret key:** `sk_live_...` (révéler + copier)
+   - **Publishable key** (commence par `pk_live_`)
+   - **Secret key** (commence par `sk_live_`, cliquer "Reveal" puis copier)
 
 ### Créer Products Live
 
@@ -193,9 +193,9 @@ curl https://synrgy-api.onrender.com/api/stripe/config
 **Attendu:**
 ```json
 {
-  "publishableKey": "pk_live_...",
-  "priceClient": "price_...",
-  "priceCoach": "price_...",
+  "publishableKey": "<commence_par_pk_live>",
+  "priceClient": "<commence_par_price>",
+  "priceCoach": "<commence_par_price>",
   "environment": "production"
 }
 ```
