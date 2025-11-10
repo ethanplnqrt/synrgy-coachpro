@@ -39,11 +39,26 @@ export default function PreviewPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+    <div className="min-h-screen bg-gradient-to-br from-[#0A0F1C] via-[#0A1628] to-[#142038]">
+      {/* Header translucide */}
+      <header className="sticky top-0 z-50 backdrop-blur-md bg-background/60 border-b border-primary/10">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-6 w-6 text-[#D4AF37] animate-pulse-gold" />
+            <span className="text-xl font-bold bg-gradient-to-r from-[#D4AF37] to-[#E8C875] bg-clip-text text-transparent">
+              Synrgy
+            </span>
+          </div>
+          <Button variant="ghost" size="sm" onClick={() => navigate('/')}>
+            Retour
+          </Button>
+        </div>
+      </header>
+
       {/* Demo Alert Banner */}
-      <Alert className="rounded-none border-x-0 border-t-0 bg-amber-500/10 border-amber-500/20">
-        <Info className="h-4 w-4 text-amber-600" />
-        <AlertDescription className="text-amber-800 dark:text-amber-200">
+      <Alert className="rounded-none border-x-0 border-t-0 bg-[#D4AF37]/10 border-[#D4AF37]/20">
+        <Info className="h-4 w-4 text-[#D4AF37]" />
+        <AlertDescription className="text-[#F5F5F5]">
           <strong>Mode Démo</strong> – Les données ne sont pas sauvegardées. Créez un compte pour une expérience complète.
         </AlertDescription>
       </Alert>
@@ -76,13 +91,13 @@ export default function PreviewPage() {
         </div>
 
         {/* Codex Sandbox */}
-        <Card className="mb-8">
+        <Card className="mb-8 border-[#D4AF37]/30 shadow-[0_0_40px_rgba(212,175,55,0.15)] hover:shadow-[0_0_50px_rgba(212,175,55,0.25)] transition-all duration-500">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
+            <CardTitle className="flex items-center gap-2 text-[#F5F5F5]">
+              <Sparkles className="h-5 w-5 text-[#D4AF37] animate-pulse" />
               Coach IA Synrgy - Mode Sandbox
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-[#CFCFCF]">
               Posez une question sur l'entraînement, la nutrition ou la récupération
             </CardDescription>
           </CardHeader>
@@ -98,12 +113,12 @@ export default function PreviewPage() {
             <Button
               onClick={handleAskCodex}
               disabled={loading || !prompt.trim()}
-              className="w-full"
+              className="w-full bg-gradient-to-r from-[#D4AF37] to-[#E8C875] hover:from-[#E8C875] hover:to-[#D4AF37] text-[#0A0F1C] font-semibold shadow-lg hover:shadow-[0_0_30px_rgba(212,175,55,0.4)] transition-all duration-300"
               size="lg"
             >
               {loading ? (
                 <>
-                  <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <div className="h-4 w-4 border-2 border-[#0A0F1C] border-t-transparent rounded-full animate-spin" />
                   Codex réfléchit...
                 </>
               ) : (
@@ -133,7 +148,7 @@ export default function PreviewPage() {
           <Button
             size="lg"
             onClick={() => navigate('/auth')}
-            className="group"
+            className="group bg-gradient-to-r from-[#D4AF37] to-[#E8C875] hover:from-[#E8C875] hover:to-[#D4AF37] text-[#0A0F1C] font-bold shadow-lg hover:shadow-[0_0_30px_rgba(212,175,55,0.5)] animate-pulse-gold"
           >
             Créer mon compte
             <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
@@ -143,6 +158,7 @@ export default function PreviewPage() {
             size="lg"
             variant="outline"
             onClick={() => navigate('/')}
+            className="border-[#D4AF37]/30 text-[#D4AF37] hover:bg-[#D4AF37]/10 hover:border-[#D4AF37] transition-all duration-300"
           >
             Découvrir Synrgy
           </Button>
@@ -161,10 +177,10 @@ export default function PreviewPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 + 0.3 }}
             >
-              <Card className="text-center">
+              <Card className="text-center border-[#D4AF37]/20 hover:border-[#D4AF37]/40 hover:shadow-[0_0_25px_rgba(212,175,55,0.2)] transition-all duration-300">
                 <CardHeader>
-                  <CardTitle className="text-lg">{feature.title}</CardTitle>
-                  <CardDescription className="text-sm">{feature.desc}</CardDescription>
+                  <CardTitle className="text-lg text-[#F5F5F5]">{feature.title}</CardTitle>
+                  <CardDescription className="text-sm text-[#CFCFCF]">{feature.desc}</CardDescription>
                 </CardHeader>
               </Card>
             </motion.div>
