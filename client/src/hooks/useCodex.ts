@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { apiUrl } from "@/lib/apiUrl";
 
 export function useCodex(role: "coach" | "client" | "athlete") {
   const [loading, setLoading] = useState(false);
@@ -7,7 +8,7 @@ export function useCodex(role: "coach" | "client" | "athlete") {
   async function askCodex(prompt: string) {
     setLoading(true);
     try {
-      const res = await fetch("/api/codex", {
+      const res = await fetch(apiUrl("/api/codex"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

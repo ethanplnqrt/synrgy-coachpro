@@ -3,6 +3,8 @@
  * Interface frontend pour communiquer avec le moteur IA Codex
  */
 
+import { apiUrl } from "@/lib/apiUrl";
+
 interface CodexContext {
   role?: "coach" | "client" | "athlete";
   userId?: string;
@@ -25,7 +27,7 @@ interface CodexResponse {
  */
 export async function askCodex(prompt: string, context?: CodexContext): Promise<CodexResponse> {
   try {
-    const res = await fetch("/api/codex", {
+    const res = await fetch(apiUrl("/api/codex"), {
       method: "POST",
       headers: { 
         "Content-Type": "application/json" 
@@ -64,7 +66,7 @@ export async function getCodexStatus(): Promise<{
   error?: string;
 }> {
   try {
-    const res = await fetch("/api/codex/status", {
+    const res = await fetch(apiUrl("/api/codex/status"), {
       credentials: "include",
     });
 
