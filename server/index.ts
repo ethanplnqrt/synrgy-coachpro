@@ -19,13 +19,19 @@ if (process.env.NODE_ENV !== "production") {
 
 // Debug: Check Stripe keys immediately after environment setup
 console.log("🔍 Vérification immédiate des variables Stripe dans process.env...");
+
+// Flexible fallback for Stripe price variables (support both naming conventions)
+const STRIPE_COACH_PRICE = process.env.STRIPE_COACH_PRICE || process.env.STRIPE_PRICE_COACH;
+const STRIPE_CLIENT_PRICE = process.env.STRIPE_CLIENT_PRICE || process.env.STRIPE_PRICE_CLIENT;
+const STRIPE_ATHLETE_PRICE = process.env.STRIPE_ATHLETE_PRICE || process.env.STRIPE_PRICE_ATHLETE;
+
 const stripeVarsCheck = {
   "Public Key": process.env.STRIPE_PUBLIC_KEY,
   "Secret Key": process.env.STRIPE_SECRET_KEY,
   "Webhook Secret": process.env.STRIPE_WEBHOOK_SECRET,
-  "Coach Price": process.env.STRIPE_PRICE_COACH,
-  "Client Price": process.env.STRIPE_PRICE_CLIENT,
-  "Athlete Price": process.env.STRIPE_PRICE_ATHLETE,
+  "Coach Price": STRIPE_COACH_PRICE,
+  "Client Price": STRIPE_CLIENT_PRICE,
+  "Athlete Price": STRIPE_ATHLETE_PRICE,
 };
 
 Object.entries(stripeVarsCheck).forEach(([key, value]) => {

@@ -248,10 +248,11 @@ router.post("/checkout", authenticate, async (req: AuthenticatedRequest, res) =>
   }
 
   // Explicit price mapping for better error handling
+  // Supports both STRIPE_COACH_PRICE and STRIPE_PRICE_COACH naming conventions
   const priceMap: Record<string, string> = {
-    coach: process.env.STRIPE_PRICE_COACH || "",
-    client: process.env.STRIPE_PRICE_CLIENT || "",
-    athlete: process.env.STRIPE_PRICE_ATHLETE || "",
+    coach: process.env.STRIPE_COACH_PRICE || process.env.STRIPE_PRICE_COACH || "",
+    client: process.env.STRIPE_CLIENT_PRICE || process.env.STRIPE_PRICE_CLIENT || "",
+    athlete: process.env.STRIPE_ATHLETE_PRICE || process.env.STRIPE_PRICE_ATHLETE || "",
   };
 
   // Get Stripe price ID based on plan

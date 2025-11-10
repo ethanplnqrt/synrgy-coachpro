@@ -37,10 +37,11 @@ export function isStripeConfigured(): boolean {
 }
 
 // Price IDs from environment (3 formules)
+// Flexible fallback: support both STRIPE_COACH_PRICE and STRIPE_PRICE_COACH formats
 export const STRIPE_PRICES = {
-  coach: process.env.STRIPE_PRICE_COACH || process.env.STRIPE_PRICE_PRO || "",
-  client: process.env.STRIPE_PRICE_CLIENT || process.env.STRIPE_PRICE_BASIC || "",
-  athlete: process.env.STRIPE_PRICE_ATHLETE || process.env.STRIPE_PRICE_BASIC || "",
+  coach: process.env.STRIPE_COACH_PRICE || process.env.STRIPE_PRICE_COACH || process.env.STRIPE_PRICE_PRO || "",
+  client: process.env.STRIPE_CLIENT_PRICE || process.env.STRIPE_PRICE_CLIENT || process.env.STRIPE_PRICE_BASIC || "",
+  athlete: process.env.STRIPE_ATHLETE_PRICE || process.env.STRIPE_PRICE_ATHLETE || process.env.STRIPE_PRICE_BASIC || "",
 };
 
 // Public key (for frontend if needed)
@@ -53,13 +54,14 @@ export const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || "";
 export function verifyStripeConfig() {
   console.log("\n🔐 Vérification de la configuration Stripe...\n");
 
+  // Check with flexible fallback for price variables
   const checks = {
     "Public Key": !!process.env.STRIPE_PUBLIC_KEY,
     "Secret Key": !!process.env.STRIPE_SECRET_KEY,
     "Webhook Secret": !!process.env.STRIPE_WEBHOOK_SECRET,
-    "Coach Price": !!process.env.STRIPE_PRICE_COACH,
-    "Client Price": !!process.env.STRIPE_PRICE_CLIENT,
-    "Athlete Price": !!process.env.STRIPE_PRICE_ATHLETE,
+    "Coach Price": !!(process.env.STRIPE_COACH_PRICE || process.env.STRIPE_PRICE_COACH),
+    "Client Price": !!(process.env.STRIPE_CLIENT_PRICE || process.env.STRIPE_PRICE_CLIENT),
+    "Athlete Price": !!(process.env.STRIPE_ATHLETE_PRICE || process.env.STRIPE_PRICE_ATHLETE),
   };
 
   let allConfigured = true;

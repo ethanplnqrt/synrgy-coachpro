@@ -6,17 +6,18 @@
 
 /**
  * Get Stripe price IDs based on environment
+ * Supports both STRIPE_COACH_PRICE and STRIPE_PRICE_COACH naming conventions
  */
 export function getStripePrices() {
   const isLive = process.env.NODE_ENV === 'production';
   
   return {
     client: isLive
-      ? process.env.STRIPE_PRICE_CLIENT_LIVE || process.env.STRIPE_PRICE_CLIENT
-      : process.env.STRIPE_PRICE_CLIENT,
+      ? process.env.STRIPE_PRICE_CLIENT_LIVE || process.env.STRIPE_CLIENT_PRICE || process.env.STRIPE_PRICE_CLIENT
+      : process.env.STRIPE_CLIENT_PRICE || process.env.STRIPE_PRICE_CLIENT,
     coach: isLive
-      ? process.env.STRIPE_PRICE_COACH_LIVE || process.env.STRIPE_PRICE_COACH
-      : process.env.STRIPE_PRICE_COACH,
+      ? process.env.STRIPE_PRICE_COACH_LIVE || process.env.STRIPE_COACH_PRICE || process.env.STRIPE_PRICE_COACH
+      : process.env.STRIPE_COACH_PRICE || process.env.STRIPE_PRICE_COACH,
   };
 }
 
