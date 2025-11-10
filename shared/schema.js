@@ -1,297 +1,258 @@
-import { sql } from "drizzle-orm";
-import { pgTable, text, timestamp, integer, boolean, decimal, jsonb, index } from "drizzle-orm/pg-core";
-import { z } from "zod";
-// Users table (coaches and athletes)
-export const users = pgTable("users", {
-    id: text("id").primaryKey().default(sql `gen_random_uuid()`),
-    email: text("email").notNull().unique(),
-    username: text("username").notNull().unique(),
-    password: text("password").notNull(),
-    fullName: text("full_name").notNull(),
-    role: text("role", { enum: ["coach", "athlete"] }).notNull(),
-    avatarUrl: text("avatar_url"),
-    isPro: boolean("is_pro").default(false),
-    stripeCustomerId: text("stripe_customer_id"),
-    stripeSubscriptionId: text("stripe_subscription_id"),
-    coachId: text("coach_id").references(() => users.id),
-    createdAt: timestamp("created_at").defaultNow(),
-    updatedAt: timestamp("updated_at").defaultNow(),
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.insertMessageSchema = exports.insertExerciseSchema = exports.insertProgramSchema = exports.loginSchema = exports.insertUserSchema = exports.media = exports.subscriptions = exports.messages = exports.messageThreads = exports.foodLogs = exports.mealFoodItems = exports.foodItems = exports.meals = exports.nutritionPlans = exports.feedbacks = exports.exercises = exports.sessions = exports.programs = exports.clients = exports.users = void 0;
+const drizzle_orm_1 = require("drizzle-orm");
+const pg_core_1 = require("drizzle-orm/pg-core");
+const zod_1 = require("zod");
+// Users table (coaches and clients)
+exports.users = (0, pg_core_1.pgTable)("users", {
+    id: (0, pg_core_1.text)("id").primaryKey().default((0, drizzle_orm_1.sql) `gen_random_uuid()`),
+    email: (0, pg_core_1.text)("email").notNull().unique(),
+    username: (0, pg_core_1.text)("username").notNull().unique(),
+    password: (0, pg_core_1.text)("password").notNull(),
+    fullName: (0, pg_core_1.text)("full_name").notNull(),
+    role: (0, pg_core_1.text)("role", { enum: ["coach", "client"] }).notNull(),
+    avatarUrl: (0, pg_core_1.text)("avatar_url"),
+    isPro: (0, pg_core_1.boolean)("is_pro").default(false),
+    stripeCustomerId: (0, pg_core_1.text)("stripe_customer_id"),
+    stripeSubscriptionId: (0, pg_core_1.text)("stripe_subscription_id"),
+    coachId: (0, pg_core_1.text)("coach_id").references(() => exports.users.id),
+    integrations: (0, pg_core_1.jsonb)("integrations").$type(),
+    createdAt: (0, pg_core_1.timestamp)("created_at").defaultNow(),
+    updatedAt: (0, pg_core_1.timestamp)("updated_at").defaultNow(),
 });
-// Client relationships (athletes linked to coaches)
-export const clients = pgTable("clients", {
-    id: text("id").primaryKey().default(sql `gen_random_uuid()`),
-    coachId: text("coach_id").notNull().references(() => users.id),
-    athleteId: text("athlete_id").notNull().references(() => users.id),
-    status: text("status", { enum: ["active", "paused", "inactive"] }).default("active"),
-    startDate: timestamp("start_date").defaultNow(),
-    endDate: timestamp("end_date"),
-    notes: text("notes"),
-    createdAt: timestamp("created_at").defaultNow(),
+// Client relationships (clients linked to coaches)
+exports.clients = (0, pg_core_1.pgTable)("clients", {
+    id: (0, pg_core_1.text)("id").primaryKey().default((0, drizzle_orm_1.sql) `gen_random_uuid()`),
+    coachId: (0, pg_core_1.text)("coach_id").notNull().references(() => exports.users.id),
+    clientId: (0, pg_core_1.text)("client_id").notNull().references(() => exports.users.id),
+    status: (0, pg_core_1.text)("status", { enum: ["active", "paused", "inactive"] }).default("active"),
+    startDate: (0, pg_core_1.timestamp)("start_date").defaultNow(),
+    endDate: (0, pg_core_1.timestamp)("end_date"),
+    notes: (0, pg_core_1.text)("notes"),
+    createdAt: (0, pg_core_1.timestamp)("created_at").defaultNow(),
 }, (table) => ({
-    coachIdx: index("clients_coach_idx").on(table.coachId),
-    athleteIdx: index("clients_athlete_idx").on(table.athleteId),
+    coachIdx: (0, pg_core_1.index)("clients_coach_idx").on(table.coachId),
+    clientIdx: (0, pg_core_1.index)("clients_client_idx").on(table.clientId),
 }));
-// Training plans
-export const trainingPlans = pgTable("training_plans", {
-    id: text("id").primaryKey().default(sql `gen_random_uuid()`),
-    coachId: text("coach_id").notNull().references(() => users.id),
-    name: text("name").notNull(),
-    description: text("description"),
-    type: text("type", { enum: ["strength", "hypertrophy", "endurance", "power", "custom"] }).notNull(),
-    duration: integer("duration_weeks").notNull(),
-    isTemplate: boolean("is_template").default(false),
-    isPublic: boolean("is_public").default(false),
-    tags: jsonb("tags").$type(),
-    createdAt: timestamp("created_at").defaultNow(),
-    updatedAt: timestamp("updated_at").defaultNow(),
-});
-// Training sessions
-export const trainingSessions = pgTable("training_sessions", {
-    id: text("id").primaryKey().default(sql `gen_random_uuid()`),
-    planId: text("plan_id").notNull().references(() => trainingPlans.id),
-    athleteId: text("athlete_id").notNull().references(() => users.id),
-    name: text("name").notNull(),
-    scheduledDate: timestamp("scheduled_date").notNull(),
-    completedDate: timestamp("completed_date"),
-    status: text("status", { enum: ["scheduled", "in_progress", "completed", "skipped"] }).default("scheduled"),
-    notes: text("notes"),
-    createdAt: timestamp("created_at").defaultNow(),
-});
+// Programs (TrueCoach-style, simplified structure)
+exports.programs = (0, pg_core_1.pgTable)("programs", {
+    id: (0, pg_core_1.text)("id").primaryKey().default((0, drizzle_orm_1.sql) `gen_random_uuid()`),
+    coachId: (0, pg_core_1.text)("coach_id").notNull().references(() => exports.users.id),
+    clientId: (0, pg_core_1.text)("client_id").notNull().references(() => exports.users.id),
+    title: (0, pg_core_1.text)("title").notNull(),
+    blocks: (0, pg_core_1.jsonb)("blocks").$type().default([]),
+    notes: (0, pg_core_1.text)("notes"),
+    isActive: (0, pg_core_1.boolean)("is_active").default(true),
+    createdAt: (0, pg_core_1.timestamp)("created_at").defaultNow(),
+    updatedAt: (0, pg_core_1.timestamp)("updated_at").defaultNow(),
+}, (table) => ({
+    coachIdx: (0, pg_core_1.index)("programs_coach_idx").on(table.coachId),
+    clientIdx: (0, pg_core_1.index)("programs_client_idx").on(table.clientId),
+}));
+// Sessions (Hevy-style workout logging)
+exports.sessions = (0, pg_core_1.pgTable)("sessions", {
+    id: (0, pg_core_1.text)("id").primaryKey().default((0, drizzle_orm_1.sql) `gen_random_uuid()`),
+    clientId: (0, pg_core_1.text)("client_id").notNull().references(() => exports.users.id),
+    programId: (0, pg_core_1.text)("program_id").references(() => exports.programs.id),
+    date: (0, pg_core_1.timestamp)("date").notNull().defaultNow(),
+    entries: (0, pg_core_1.jsonb)("entries").$type().default([]),
+    durationMin: (0, pg_core_1.integer)("duration_min"),
+    rpeAvg: (0, pg_core_1.decimal)("rpe_avg", { precision: 3, scale: 1 }),
+    notes: (0, pg_core_1.text)("notes"),
+    createdAt: (0, pg_core_1.timestamp)("created_at").defaultNow(),
+}, (table) => ({
+    clientDateIdx: (0, pg_core_1.index)("sessions_client_date_idx").on(table.clientId, table.date),
+}));
 // Exercises
-export const exercises = pgTable("exercises", {
-    id: text("id").primaryKey().default(sql `gen_random_uuid()`),
-    name: text("name").notNull(),
-    category: text("category").notNull(), // e.g., "chest", "back", "legs"
-    muscleGroups: jsonb("muscle_groups").$type(),
-    equipment: text("equipment"),
-    instructions: text("instructions"),
-    videoUrl: text("video_url"),
-    isCustom: boolean("is_custom").default(false),
-    createdBy: text("created_by").references(() => users.id),
-    createdAt: timestamp("created_at").defaultNow(),
+exports.exercises = (0, pg_core_1.pgTable)("exercises", {
+    id: (0, pg_core_1.text)("id").primaryKey().default((0, drizzle_orm_1.sql) `gen_random_uuid()`),
+    name: (0, pg_core_1.text)("name").notNull(),
+    category: (0, pg_core_1.text)("category").notNull(), // e.g., "chest", "back", "legs"
+    muscleGroups: (0, pg_core_1.jsonb)("muscle_groups").$type(),
+    equipment: (0, pg_core_1.text)("equipment"),
+    instructions: (0, pg_core_1.text)("instructions"),
+    videoUrl: (0, pg_core_1.text)("video_url"),
+    isCustom: (0, pg_core_1.boolean)("is_custom").default(false),
+    createdBy: (0, pg_core_1.text)("created_by").references(() => exports.users.id),
+    createdAt: (0, pg_core_1.timestamp)("created_at").defaultNow(),
 });
-// Exercise logs (Heavy/Strong style)
-export const exerciseLogs = pgTable("exercise_logs", {
-    id: text("id").primaryKey().default(sql `gen_random_uuid()`),
-    sessionId: text("session_id").notNull().references(() => trainingSessions.id),
-    exerciseId: text("exercise_id").notNull().references(() => exercises.id),
-    athleteId: text("athlete_id").notNull().references(() => users.id),
-    sets: jsonb("sets").$type(),
-    totalVolume: decimal("total_volume", { precision: 10, scale: 2 }),
-    isPr: boolean("is_pr").default(false),
-    prType: text("pr_type"), // "weight", "reps", "volume"
-    completedAt: timestamp("completed_at").defaultNow(),
-});
+// Feedbacks (daily client feedback)
+exports.feedbacks = (0, pg_core_1.pgTable)("feedbacks", {
+    id: (0, pg_core_1.text)("id").primaryKey().default((0, drizzle_orm_1.sql) `gen_random_uuid()`),
+    clientId: (0, pg_core_1.text)("client_id").notNull().references(() => exports.users.id),
+    date: (0, pg_core_1.timestamp)("date").notNull(),
+    sleepHours: (0, pg_core_1.decimal)("sleep_hours", { precision: 3, scale: 1 }),
+    stressLevel: (0, pg_core_1.integer)("stress_level"), // 1-10
+    sorenessLevel: (0, pg_core_1.integer)("soreness_level"), // 1-10
+    energyLevel: (0, pg_core_1.integer)("energy_level"), // 1-10
+    notes: (0, pg_core_1.text)("notes"),
+    createdAt: (0, pg_core_1.timestamp)("created_at").defaultNow(),
+}, (table) => ({
+    clientDateIdx: (0, pg_core_1.index)("feedbacks_client_date_idx").on(table.clientId, table.date),
+}));
 // Nutrition plans
-export const nutritionPlans = pgTable("nutrition_plans", {
-    id: text("id").primaryKey().default(sql `gen_random_uuid()`),
-    coachId: text("coach_id").references(() => users.id),
-    athleteId: text("athlete_id").notNull().references(() => users.id),
-    name: text("name").notNull(),
-    description: text("description"),
-    targetCalories: integer("target_calories").notNull(),
-    targetProtein: decimal("target_protein", { precision: 5, scale: 2 }),
-    targetCarbs: decimal("target_carbs", { precision: 5, scale: 2 }),
-    targetFat: decimal("target_fat", { precision: 5, scale: 2 }),
-    preferences: jsonb("preferences").$type(),
-    isActive: boolean("is_active").default(true),
-    createdAt: timestamp("created_at").defaultNow(),
-    updatedAt: timestamp("updated_at").defaultNow(),
+exports.nutritionPlans = (0, pg_core_1.pgTable)("nutrition_plans", {
+    id: (0, pg_core_1.text)("id").primaryKey().default((0, drizzle_orm_1.sql) `gen_random_uuid()`),
+    coachId: (0, pg_core_1.text)("coach_id").references(() => exports.users.id),
+    clientId: (0, pg_core_1.text)("client_id").notNull().references(() => exports.users.id),
+    name: (0, pg_core_1.text)("name").notNull(),
+    description: (0, pg_core_1.text)("description"),
+    targetCalories: (0, pg_core_1.integer)("target_calories").notNull(),
+    targetProtein: (0, pg_core_1.decimal)("target_protein", { precision: 5, scale: 2 }),
+    targetCarbs: (0, pg_core_1.decimal)("target_carbs", { precision: 5, scale: 2 }),
+    targetFat: (0, pg_core_1.decimal)("target_fat", { precision: 5, scale: 2 }),
+    preferences: (0, pg_core_1.jsonb)("preferences").$type(),
+    isActive: (0, pg_core_1.boolean)("is_active").default(true),
+    createdAt: (0, pg_core_1.timestamp)("created_at").defaultNow(),
+    updatedAt: (0, pg_core_1.timestamp)("updated_at").defaultNow(),
 });
 // Meals
-export const meals = pgTable("meals", {
-    id: text("id").primaryKey().default(sql `gen_random_uuid()`),
-    planId: text("plan_id").notNull().references(() => nutritionPlans.id),
-    name: text("name").notNull(),
-    mealType: text("meal_type", { enum: ["breakfast", "lunch", "dinner", "snack"] }).notNull(),
-    order: integer("order").notNull(),
-    calories: integer("calories").notNull(),
-    protein: decimal("protein", { precision: 5, scale: 2 }),
-    carbs: decimal("carbs", { precision: 5, scale: 2 }),
-    fat: decimal("fat", { precision: 5, scale: 2 }),
-    instructions: text("instructions"),
-    createdAt: timestamp("created_at").defaultNow(),
+exports.meals = (0, pg_core_1.pgTable)("meals", {
+    id: (0, pg_core_1.text)("id").primaryKey().default((0, drizzle_orm_1.sql) `gen_random_uuid()`),
+    planId: (0, pg_core_1.text)("plan_id").notNull().references(() => exports.nutritionPlans.id),
+    name: (0, pg_core_1.text)("name").notNull(),
+    mealType: (0, pg_core_1.text)("meal_type", { enum: ["breakfast", "lunch", "dinner", "snack"] }).notNull(),
+    order: (0, pg_core_1.integer)("order").notNull(),
+    calories: (0, pg_core_1.integer)("calories").notNull(),
+    protein: (0, pg_core_1.decimal)("protein", { precision: 5, scale: 2 }),
+    carbs: (0, pg_core_1.decimal)("carbs", { precision: 5, scale: 2 }),
+    fat: (0, pg_core_1.decimal)("fat", { precision: 5, scale: 2 }),
+    instructions: (0, pg_core_1.text)("instructions"),
+    createdAt: (0, pg_core_1.timestamp)("created_at").defaultNow(),
 });
 // Food items
-export const foodItems = pgTable("food_items", {
-    id: text("id").primaryKey().default(sql `gen_random_uuid()`),
-    name: text("name").notNull(),
-    brand: text("brand"),
-    barcode: text("barcode"),
-    caloriesPer100g: decimal("calories_per_100g", { precision: 8, scale: 2 }),
-    proteinPer100g: decimal("protein_per_100g", { precision: 5, scale: 2 }),
-    carbsPer100g: decimal("carbs_per_100g", { precision: 5, scale: 2 }),
-    fatPer100g: decimal("fat_per_100g", { precision: 5, scale: 2 }),
-    fiberPer100g: decimal("fiber_per_100g", { precision: 5, scale: 2 }),
-    sugarPer100g: decimal("sugar_per_100g", { precision: 5, scale: 2 }),
-    isCustom: boolean("is_custom").default(false),
-    createdBy: text("created_by").references(() => users.id),
-    createdAt: timestamp("created_at").defaultNow(),
+exports.foodItems = (0, pg_core_1.pgTable)("food_items", {
+    id: (0, pg_core_1.text)("id").primaryKey().default((0, drizzle_orm_1.sql) `gen_random_uuid()`),
+    name: (0, pg_core_1.text)("name").notNull(),
+    brand: (0, pg_core_1.text)("brand"),
+    barcode: (0, pg_core_1.text)("barcode"),
+    caloriesPer100g: (0, pg_core_1.decimal)("calories_per_100g", { precision: 8, scale: 2 }),
+    proteinPer100g: (0, pg_core_1.decimal)("protein_per_100g", { precision: 5, scale: 2 }),
+    carbsPer100g: (0, pg_core_1.decimal)("carbs_per_100g", { precision: 5, scale: 2 }),
+    fatPer100g: (0, pg_core_1.decimal)("fat_per_100g", { precision: 5, scale: 2 }),
+    fiberPer100g: (0, pg_core_1.decimal)("fiber_per_100g", { precision: 5, scale: 2 }),
+    sugarPer100g: (0, pg_core_1.decimal)("sugar_per_100g", { precision: 5, scale: 2 }),
+    isCustom: (0, pg_core_1.boolean)("is_custom").default(false),
+    createdBy: (0, pg_core_1.text)("created_by").references(() => exports.users.id),
+    createdAt: (0, pg_core_1.timestamp)("created_at").defaultNow(),
 });
 // Meal food items (junction table)
-export const mealFoodItems = pgTable("meal_food_items", {
-    id: text("id").primaryKey().default(sql `gen_random_uuid()`),
-    mealId: text("meal_id").notNull().references(() => meals.id),
-    foodItemId: text("food_item_id").notNull().references(() => foodItems.id),
-    quantity: decimal("quantity", { precision: 8, scale: 2 }).notNull(),
-    unit: text("unit").notNull(), // "g", "ml", "cup", "slice", etc.
-    notes: text("notes"),
+exports.mealFoodItems = (0, pg_core_1.pgTable)("meal_food_items", {
+    id: (0, pg_core_1.text)("id").primaryKey().default((0, drizzle_orm_1.sql) `gen_random_uuid()`),
+    mealId: (0, pg_core_1.text)("meal_id").notNull().references(() => exports.meals.id),
+    foodItemId: (0, pg_core_1.text)("food_item_id").notNull().references(() => exports.foodItems.id),
+    quantity: (0, pg_core_1.decimal)("quantity", { precision: 8, scale: 2 }).notNull(),
+    unit: (0, pg_core_1.text)("unit").notNull(), // "g", "ml", "cup", "slice", etc.
+    notes: (0, pg_core_1.text)("notes"),
 });
-// Check-ins (TrueCoach style)
-export const checkIns = pgTable("check_ins", {
-    id: text("id").primaryKey().default(sql `gen_random_uuid()`),
-    athleteId: text("athlete_id").notNull().references(() => users.id),
-    coachId: text("coach_id").references(() => users.id),
-    date: timestamp("date").notNull(),
-    mood: integer("mood"), // 1-10 scale
-    sleep: decimal("sleep", { precision: 3, scale: 1 }), // hours
-    stress: integer("stress"), // 1-10 scale
-    pain: integer("pain"), // 1-10 scale
-    motivation: integer("motivation"), // 1-10 scale
-    adherence: integer("adherence"), // 1-10 scale
-    energy: integer("energy"), // 1-10 scale
-    notes: text("notes"),
-    coachNotes: text("coach_notes"),
-    createdAt: timestamp("created_at").defaultNow(),
-});
-// Habits tracking
-export const habits = pgTable("habits", {
-    id: text("id").primaryKey().default(sql `gen_random_uuid()`),
-    athleteId: text("athlete_id").notNull().references(() => users.id),
-    name: text("name").notNull(),
-    description: text("description"),
-    target: integer("target").notNull(), // daily target
-    unit: text("unit").notNull(), // "glasses", "steps", "minutes", etc.
-    color: text("color").default("#4ADE80"),
-    isActive: boolean("is_active").default(true),
-    createdAt: timestamp("created_at").defaultNow(),
-});
-// Habit logs
-export const habitLogs = pgTable("habit_logs", {
-    id: text("id").primaryKey().default(sql `gen_random_uuid()`),
-    habitId: text("habit_id").notNull().references(() => habits.id),
-    athleteId: text("athlete_id").notNull().references(() => users.id),
-    date: timestamp("date").notNull(),
-    value: integer("value").notNull(),
-    notes: text("notes"),
-    createdAt: timestamp("created_at").defaultNow(),
-});
-// Messages (coach-athlete communication)
-export const messages = pgTable("messages", {
-    id: text("id").primaryKey().default(sql `gen_random_uuid()`),
-    senderId: text("sender_id").notNull().references(() => users.id),
-    recipientId: text("recipient_id").notNull().references(() => users.id),
-    content: text("content").notNull(),
-    type: text("type", { enum: ["text", "image", "video", "file"] }).default("text"),
-    mediaUrl: text("media_url"),
-    isRead: boolean("is_read").default(false),
-    isAiGenerated: boolean("is_ai_generated").default(false),
-    createdAt: timestamp("created_at").defaultNow(),
+// Food logs (imported from Macros, read-only)
+exports.foodLogs = (0, pg_core_1.pgTable)("food_logs", {
+    id: (0, pg_core_1.text)("id").primaryKey().default((0, drizzle_orm_1.sql) `gen_random_uuid()`),
+    clientId: (0, pg_core_1.text)("client_id").notNull().references(() => exports.users.id),
+    date: (0, pg_core_1.timestamp)("date").notNull(),
+    mealName: (0, pg_core_1.text)("meal_name"),
+    calories: (0, pg_core_1.integer)("calories"),
+    protein: (0, pg_core_1.decimal)("protein", { precision: 6, scale: 2 }),
+    carbs: (0, pg_core_1.decimal)("carbs", { precision: 6, scale: 2 }),
+    fat: (0, pg_core_1.decimal)("fat", { precision: 6, scale: 2 }),
+    fiber: (0, pg_core_1.decimal)("fiber", { precision: 6, scale: 2 }),
+    source: (0, pg_core_1.text)("source").default("macros"),
+    rawData: (0, pg_core_1.jsonb)("raw_data"),
+    syncedAt: (0, pg_core_1.timestamp)("synced_at").defaultNow(),
+    createdAt: (0, pg_core_1.timestamp)("created_at").defaultNow(),
 }, (table) => ({
-    senderIdx: index("messages_sender_idx").on(table.senderId),
-    recipientIdx: index("messages_recipient_idx").on(table.recipientId),
+    clientDateIdx: (0, pg_core_1.index)("food_logs_client_date_idx").on(table.clientId, table.date),
 }));
-// Tasks (coach tasks and athlete tasks)
-export const tasks = pgTable("tasks", {
-    id: text("id").primaryKey().default(sql `gen_random_uuid()`),
-    coachId: text("coach_id").references(() => users.id),
-    athleteId: text("athlete_id").references(() => users.id),
-    title: text("title").notNull(),
-    description: text("description"),
-    type: text("type", { enum: ["coach", "athlete", "ai_generated"] }).notNull(),
-    priority: text("priority", { enum: ["low", "medium", "high", "urgent"] }).default("medium"),
-    status: text("status", { enum: ["pending", "in_progress", "completed", "cancelled"] }).default("pending"),
-    dueDate: timestamp("due_date"),
-    completedAt: timestamp("completed_at"),
-    createdAt: timestamp("created_at").defaultNow(),
-});
-// Bookings (Cal integration)
-export const bookings = pgTable("bookings", {
-    id: text("id").primaryKey().default(sql `gen_random_uuid()`),
-    coachId: text("coach_id").notNull().references(() => users.id),
-    athleteId: text("athlete_id").notNull().references(() => users.id),
-    startTime: timestamp("start_time").notNull(),
-    endTime: timestamp("end_time").notNull(),
-    type: text("type", { enum: ["consultation", "check_in", "training", "nutrition"] }).notNull(),
-    status: text("status", { enum: ["scheduled", "confirmed", "completed", "cancelled", "no_show"] }).default("scheduled"),
-    notes: text("notes"),
-    videoUrl: text("video_url"),
-    meetingId: text("meeting_id"),
-    createdAt: timestamp("created_at").defaultNow(),
-});
-// Availability (coach availability)
-export const availability = pgTable("availability", {
-    id: text("id").primaryKey().default(sql `gen_random_uuid()`),
-    coachId: text("coach_id").notNull().references(() => users.id),
-    dayOfWeek: integer("day_of_week").notNull(), // 0-6 (Sunday-Saturday)
-    startTime: text("start_time").notNull(), // "09:00"
-    endTime: text("end_time").notNull(), // "17:00"
-    isRecurring: boolean("is_recurring").default(true),
-    specificDate: timestamp("specific_date"), // for one-time availability
-    isActive: boolean("is_active").default(true),
-    createdAt: timestamp("created_at").defaultNow(),
-});
+// Message threads
+exports.messageThreads = (0, pg_core_1.pgTable)("message_threads", {
+    id: (0, pg_core_1.text)("id").primaryKey().default((0, drizzle_orm_1.sql) `gen_random_uuid()`),
+    coachId: (0, pg_core_1.text)("coach_id").notNull().references(() => exports.users.id),
+    clientId: (0, pg_core_1.text)("client_id").notNull().references(() => exports.users.id),
+    lastMessageAt: (0, pg_core_1.timestamp)("last_message_at").defaultNow(),
+    createdAt: (0, pg_core_1.timestamp)("created_at").defaultNow(),
+}, (table) => ({
+    coachIdx: (0, pg_core_1.index)("threads_coach_idx").on(table.coachId),
+    clientIdx: (0, pg_core_1.index)("threads_client_idx").on(table.clientId),
+}));
+// Messages (coach-client communication)
+exports.messages = (0, pg_core_1.pgTable)("messages", {
+    id: (0, pg_core_1.text)("id").primaryKey().default((0, drizzle_orm_1.sql) `gen_random_uuid()`),
+    threadId: (0, pg_core_1.text)("thread_id").references(() => exports.messageThreads.id),
+    senderId: (0, pg_core_1.text)("sender_id").notNull().references(() => exports.users.id),
+    recipientId: (0, pg_core_1.text)("recipient_id").notNull().references(() => exports.users.id),
+    content: (0, pg_core_1.text)("content").notNull(),
+    type: (0, pg_core_1.text)("type", { enum: ["text", "image", "video", "file"] }).default("text"),
+    mediaUrl: (0, pg_core_1.text)("media_url"),
+    isRead: (0, pg_core_1.boolean)("is_read").default(false),
+    isAiGenerated: (0, pg_core_1.boolean)("is_ai_generated").default(false),
+    createdAt: (0, pg_core_1.timestamp)("created_at").defaultNow(),
+}, (table) => ({
+    threadIdx: (0, pg_core_1.index)("messages_thread_idx").on(table.threadId),
+    senderIdx: (0, pg_core_1.index)("messages_sender_idx").on(table.senderId),
+    recipientIdx: (0, pg_core_1.index)("messages_recipient_idx").on(table.recipientId),
+}));
 // Payments and subscriptions
-export const subscriptions = pgTable("subscriptions", {
-    id: text("id").primaryKey().default(sql `gen_random_uuid()`),
-    userId: text("user_id").notNull().references(() => users.id),
-    stripeSubscriptionId: text("stripe_subscription_id").notNull().unique(),
-    stripePriceId: text("stripe_price_id").notNull(),
-    status: text("status", { enum: ["active", "cancelled", "past_due", "unpaid"] }).notNull(),
-    currentPeriodStart: timestamp("current_period_start").notNull(),
-    currentPeriodEnd: timestamp("current_period_end").notNull(),
-    cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false),
-    trialEnd: timestamp("trial_end"),
-    createdAt: timestamp("created_at").defaultNow(),
-    updatedAt: timestamp("updated_at").defaultNow(),
+exports.subscriptions = (0, pg_core_1.pgTable)("subscriptions", {
+    id: (0, pg_core_1.text)("id").primaryKey().default((0, drizzle_orm_1.sql) `gen_random_uuid()`),
+    userId: (0, pg_core_1.text)("user_id").notNull().references(() => exports.users.id),
+    stripeSubscriptionId: (0, pg_core_1.text)("stripe_subscription_id").notNull().unique(),
+    stripePriceId: (0, pg_core_1.text)("stripe_price_id").notNull(),
+    status: (0, pg_core_1.text)("status", { enum: ["active", "cancelled", "past_due", "unpaid"] }).notNull(),
+    currentPeriodStart: (0, pg_core_1.timestamp)("current_period_start").notNull(),
+    currentPeriodEnd: (0, pg_core_1.timestamp)("current_period_end").notNull(),
+    cancelAtPeriodEnd: (0, pg_core_1.boolean)("cancel_at_period_end").default(false),
+    trialEnd: (0, pg_core_1.timestamp)("trial_end"),
+    createdAt: (0, pg_core_1.timestamp)("created_at").defaultNow(),
+    updatedAt: (0, pg_core_1.timestamp)("updated_at").defaultNow(),
 });
 // Media (images, notes, files)
-export const media = pgTable("media", {
-    id: text("id").primaryKey().default(sql `gen_random_uuid()`),
-    userId: text("user_id").notNull().references(() => users.id),
-    type: text("type", { enum: ["image", "video", "document", "note"] }).notNull(),
-    filename: text("filename").notNull(),
-    originalName: text("original_name").notNull(),
-    mimeType: text("mime_type").notNull(),
-    size: integer("size").notNull(),
-    url: text("url").notNull(),
-    thumbnailUrl: text("thumbnail_url"),
-    metadata: jsonb("metadata").$type(),
-    createdAt: timestamp("created_at").defaultNow(),
+exports.media = (0, pg_core_1.pgTable)("media", {
+    id: (0, pg_core_1.text)("id").primaryKey().default((0, drizzle_orm_1.sql) `gen_random_uuid()`),
+    userId: (0, pg_core_1.text)("user_id").notNull().references(() => exports.users.id),
+    type: (0, pg_core_1.text)("type", { enum: ["image", "video", "document", "note"] }).notNull(),
+    filename: (0, pg_core_1.text)("filename").notNull(),
+    originalName: (0, pg_core_1.text)("original_name").notNull(),
+    mimeType: (0, pg_core_1.text)("mime_type").notNull(),
+    size: (0, pg_core_1.integer)("size").notNull(),
+    url: (0, pg_core_1.text)("url").notNull(),
+    thumbnailUrl: (0, pg_core_1.text)("thumbnail_url"),
+    metadata: (0, pg_core_1.jsonb)("metadata").$type(),
+    createdAt: (0, pg_core_1.timestamp)("created_at").defaultNow(),
 });
 // Schemas for validation
-export const insertUserSchema = z.object({
-    email: z.string().email(),
-    username: z.string().min(3),
-    password: z.string().min(6),
-    fullName: z.string().min(2),
-    role: z.enum(["coach", "athlete"]),
+exports.insertUserSchema = zod_1.z.object({
+    email: zod_1.z.string().email(),
+    username: zod_1.z.string().min(3),
+    password: zod_1.z.string().min(6),
+    fullName: zod_1.z.string().min(2),
+    role: zod_1.z.enum(["coach", "client"]),
 });
-export const loginSchema = z.object({
-    username: z.string().min(1),
-    password: z.string().min(1),
+exports.loginSchema = zod_1.z.object({
+    username: zod_1.z.string().min(1),
+    password: zod_1.z.string().min(1),
 });
-export const insertProgramSchema = z.object({
-    name: z.string().min(1),
-    description: z.string().optional(),
-    category: z.string().min(1),
-    muscleGroups: z.array(z.string()).optional(),
-    equipment: z.string().optional(),
-    instructions: z.string().optional(),
-    videoUrl: z.string().url().optional(),
+exports.insertProgramSchema = zod_1.z.object({
+    name: zod_1.z.string().min(1),
+    description: zod_1.z.string().optional(),
+    category: zod_1.z.string().min(1),
+    muscleGroups: zod_1.z.array(zod_1.z.string()).optional(),
+    equipment: zod_1.z.string().optional(),
+    instructions: zod_1.z.string().optional(),
+    videoUrl: zod_1.z.string().url().optional(),
 });
-export const insertExerciseSchema = z.object({
-    name: z.string().min(1),
-    category: z.string().min(1),
-    muscleGroups: z.array(z.string()).optional(),
-    equipment: z.string().optional(),
-    instructions: z.string().optional(),
-    videoUrl: z.string().url().optional(),
+exports.insertExerciseSchema = zod_1.z.object({
+    name: zod_1.z.string().min(1),
+    category: zod_1.z.string().min(1),
+    muscleGroups: zod_1.z.array(zod_1.z.string()).optional(),
+    equipment: zod_1.z.string().optional(),
+    instructions: zod_1.z.string().optional(),
+    videoUrl: zod_1.z.string().url().optional(),
 });
-export const insertMessageSchema = z.object({
-    content: z.string().min(1),
-    senderId: z.string().min(1),
-    recipientId: z.string().min(1),
-    type: z.enum(["text", "image", "video", "file"]).optional(),
-    mediaUrl: z.string().url().optional(),
+exports.insertMessageSchema = zod_1.z.object({
+    content: zod_1.z.string().min(1),
+    senderId: zod_1.z.string().min(1),
+    recipientId: zod_1.z.string().min(1),
+    type: zod_1.z.enum(["text", "image", "video", "file"]).optional(),
+    mediaUrl: zod_1.z.string().url().optional(),
 });
