@@ -141,15 +141,11 @@ app.get("/api/health", (_req, res) =>
   })
 );
 
-// Serve React build from /dist
-const rootDir = path.resolve();
-const distDir = path.join(rootDir, "dist");
+// Note: Frontend is deployed separately, backend serves API only
 
-app.use(express.static(distDir));
-
-// Fallback to index.html for all non-API routes
+// ✅ Fallback route for any non-API requests
 app.get("*", (_req, res) => {
-  res.sendFile(path.join(distDir, "index.html"));
+  res.status(200).send("✅ Synrgy API is running. Frontend build not included here.");
 });
 
 // Global error handler (must be last)
