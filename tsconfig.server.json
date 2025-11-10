@@ -1,17 +1,12 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "ESNext",
-    "moduleResolution": "Node",
+    "module": "commonjs",
     "rootDir": ".",
     "outDir": "dist",
-    "strict": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "noEmit": false,
-    "declaration": false
+    "strict": false
   },
-  "include": ["server/**/*.ts", "shared/**/*.ts"],
-  "exclude": ["node_modules", "dist", "client", "coreAI"]
+  "include": ["server", "shared"]
 }
