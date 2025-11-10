@@ -3,6 +3,7 @@
 
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "./components/ui/toaster";
@@ -25,6 +26,7 @@ import "./i18n";
 import Landing from "./pages/landing";
 import Pricing from "./pages/pricing";
 import AuthPage from "./pages/auth";
+import PreviewPage from "./pages/preview";
 import NotFound from "./pages/not-found";
 
 // Coach pages
@@ -128,6 +130,7 @@ function AppRoutes() {
       />
 
       <Route path="/pricing" element={<Pricing />} />
+      <Route path="/preview" element={<PreviewPage />} />
       <Route path="/login" element={<AuthPage />} />
       <Route path="/signup" element={<AuthPage />} />
       <Route path="/register" element={<AuthPage />} />
@@ -205,9 +208,14 @@ function AppContent() {
             <header className="flex items-center justify-between p-4 border-b border-border">
               <SidebarTrigger data-testid="button-sidebar-toggle" />
             </header>
-            <main className="flex-1 overflow-y-auto scrollbar-thin">
+            <motion.main
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="flex-1 overflow-y-auto scrollbar-thin"
+            >
               <AppRoutes />
-            </main>
+            </motion.main>
           </div>
         </div>
       </SidebarProvider>
