@@ -5,7 +5,7 @@
   "scripts": {
     "build": "npm run build:server",
     "build:server": "tsc --project tsconfig.server.json",
-    "start": "node --input-type=commonjs dist/server/index.js",
+    "start": "node --require ./force-cjs.js dist/server/index.js",
     "start:prod": "npm run build && npm start",
     "dev": "ts-node-dev --respawn --transpile-only server/index.ts"
   },
