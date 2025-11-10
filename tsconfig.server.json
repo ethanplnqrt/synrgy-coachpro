@@ -6,7 +6,9 @@
     "outDir": "dist",
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "strict": false
+    "strict": false,
+    "moduleResolution": "node"
   },
-  "include": ["server", "shared"]
+  "include": ["server/**/*", "shared/**/*"],
+  "exclude": ["node_modules", "dist", "client"]
 }
