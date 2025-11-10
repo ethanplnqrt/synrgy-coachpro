@@ -5,10 +5,10 @@
     "moduleResolution": "Node",
     "rootDir": ".",
     "outDir": "dist",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
     "strict": false,
+    "esModuleInterop": true,
     "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
     "noEmit": false,
     "declaration": false
   },
