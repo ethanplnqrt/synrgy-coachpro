@@ -43,7 +43,6 @@ echo -e "${BLUE}Configuration des clés Stripe...${NC}\n"
 
 # Stripe Keys
 update_env_var "STRIPE_PUBLIC_KEY" "pk_test_51SOw9eJlyCE49zWsWQzcVIsHXiBzTpAeMU5XPbQXLQknrFAsW54PJ4A20FMRU7sceBsPawp9k1NwOaUjyeq6Y0w300uFUu3fzI"
-update_env_var "STRIPE_SECRET_KEY" "sk_test_51SOw9eJlyCE49zWsV3mo2lO0hjAHh1GuTpHJ90GZOWfdzRaDYr0O5C0zrZTlAkVtNnv1tbL0GNDQ0Y6mD4CogpB300QHdFK4DT"
 update_env_var "STRIPE_WEBHOOK_SECRET" "whsec_9eb3b48f66c9530a793f517790a34fff2fcd3c231401810148bd57658b11e7e4"
 
 echo ""
