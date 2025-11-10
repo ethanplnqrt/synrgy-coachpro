@@ -128,8 +128,8 @@ app.get("/api/health", (_req, res) =>
 );
 
 // Serve React build from /dist
-const __dirname = process.cwd();
-const distDir = path.join(__dirname, "dist");
+const rootDir = path.resolve();
+const distDir = path.join(rootDir, "dist");
 
 app.use(express.static(distDir));
 
