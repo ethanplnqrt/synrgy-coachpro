@@ -141,10 +141,8 @@ app.get("*", (_req, res) => {
 // Global error handler (must be last)
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 10000;
 
 app.listen(PORT, () => {
-  console.log(`✅ Synrgy backend démarré - routes chargées avec succès`);
-  console.log(`🚀 Synrgy ${isProduction ? 'PRODUCTION' : 'DEV'} live on http://localhost:${PORT}`);
-  console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
+  console.log(`🚀 Synrgy API running on port ${PORT}`);
 });
