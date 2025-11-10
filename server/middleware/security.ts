@@ -21,8 +21,25 @@ export const helmetConfig = helmet({
 });
 
 // CORS configuration
+// Allows multiple origins: Render frontend, Vercel, Netlify, and local development
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  "https://synrgy-api.onrender.com",
+  "http://localhost:5173",
+  "http://localhost:3000",
+].filter(Boolean); // Remove undefined values
+
 export const corsConfig = cors({
-  origin: process.env.FRONTEND_URL || "http://localhost:5173",
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true, // ✅ CRITICAL: Enable cookies/credentials
