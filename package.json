@@ -9,7 +9,7 @@
     "start": "node dist/server/index.cjs",
     "start:prod": "npm run build && npm start",
     "dev": "ts-node-dev --respawn --transpile-only server/index.ts",
-    "test:api": "tsx server/utils/healthCheck.ts"
+    "test:api": "ts-node server/utils/healthCheck.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
