@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import { apiUrl } from "@/lib/apiUrl";
 
 export interface AuthUser {
   id: string;
@@ -35,7 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const getCurrentUser = async (): Promise<AuthUser | null> => {
     try {
-      const response = await fetch("/api/auth/me", {
+      const response = await fetch(apiUrl("/api/auth/me"), {
         credentials: "include",
       });
 

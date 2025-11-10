@@ -5,10 +5,12 @@
   "scripts": {
     "build": "npm run build:server",
     "build:server": "tsc --project tsconfig.server.json",
+    "build:client": "vite build",
     "postbuild": "mv dist/server/index.js dist/server/index.cjs",
     "start": "node dist/server/index.cjs",
     "start:prod": "npm run build && npm start",
     "dev": "ts-node-dev --respawn --transpile-only server/index.ts",
+    "dev:client": "vite",
     "test:api": "ts-node server/utils/healthCheck.ts"
   },
   "dependencies": {

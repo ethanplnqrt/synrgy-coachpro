@@ -1,5 +1,8 @@
 import { QueryClient } from "@tanstack/react-query";
 
+// API Base URL from environment or fallback to relative
+const API_BASE = import.meta.env.VITE_API_BASE || "/api";
+
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
@@ -14,7 +17,10 @@ export async function apiRequest(
 ): Promise<Response> {
   const headers: Record<string, string> = data ? { "Content-Type": "application/json" } : {};
 
-  const res = await fetch(url, {
+  // Prepend API_BASE if URL is relative
+  const fullUrl = url.startsWith("http") ? url : `${API_BASE}${url.startsWith("/") ? url : `/${url}`}`;
+
+  const res = await fetch(fullUrl, {
     method,
     headers,
     body: data ? JSON.stringify(data) : undefined,
