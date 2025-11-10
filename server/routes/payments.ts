@@ -17,17 +17,8 @@ import { updateSubscription as updateUserSubscription } from "../services/subscr
 
 const router = express.Router();
 
-// Plans available
+// Plans available (Coach & Client only)
 const PLANS = [
-  {
-    id: "athlete",
-    name: "Athlète Indépendant",
-    price: 19,
-    priceId: "price_athlete_monthly", // Stripe price ID (if live)
-    interval: "month",
-    description: "Coach IA personnel, programmes, nutrition",
-    role: "athlete",
-  },
   {
     id: "client",
     name: "Client Accompagné",
@@ -252,7 +243,6 @@ router.post("/checkout", authenticate, async (req: AuthenticatedRequest, res) =>
   const priceMap: Record<string, string> = {
     coach: process.env.STRIPE_COACH_PRICE || process.env.STRIPE_PRICE_COACH || "",
     client: process.env.STRIPE_CLIENT_PRICE || process.env.STRIPE_PRICE_CLIENT || "",
-    athlete: process.env.STRIPE_ATHLETE_PRICE || process.env.STRIPE_PRICE_ATHLETE || "",
   };
 
   // Get Stripe price ID based on plan

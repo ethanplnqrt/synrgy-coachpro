@@ -7,27 +7,13 @@ router.get("/", (_req, res) => {
     success: true,
     plans: [
       {
-        id: "athlete",
-        name: "Athlète Indépendant",
-        price: 19,
-        interval: "month",
-        description: "Coach IA personnel pour sportifs autonomes",
-        features: [
-          "Coach IA illimité",
-          "Programmes d'entraînement",
-          "Plans nutrition",
-          "Suivi progression",
-          "Analytics",
-        ],
-      },
-      {
         id: "client",
         name: "Client Accompagné",
         price: 29,
         interval: "month",
         description: "Suivi par un coach professionnel",
         features: [
-          "Tout du plan Athlète",
+          "Coach IA personnel",
           "Coach humain dédié",
           "Programme personnalisé",
           "Communication directe",
