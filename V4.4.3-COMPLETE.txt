@@ -1,0 +1,92 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ SYNRGY v4.4.3 — PRICING FINAL & AUTH SAFE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+MODIFICATIONS APPLIQUÉES:
+
+✅ Section pricing mise à jour (landing.tsx)
+✅ 2 plans uniquement: Client (9,90€) / Coach (29,90€)
+✅ Fonction handleSelectPlan ajoutée (auth safe)
+✅ Design glassmorphism premium conservé
+✅ Couleurs thématiques: menthe (#8AFFC1) / or (#FFD66B)
+✅ Animations motion (smooth x: -20/+20)
+✅ Hover effects (scale 1.02 + brightness)
+❌ Plan "Athlète Indépendant" SUPPRIMÉ
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LOGIC AUTH SAFE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+handleSelectPlan(plan):
+  → Check cookie synrgy_token
+  → Si pas connecté: navigate('/signup?role=${plan}')
+  → Si connecté: navigate('/checkout?plan=${plan}')
+  → Pas de requête API sur page publique
+  → Aucune erreur 401
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TARIFS OFFICIELS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Plan Client Synrgy:
+  Prix:     9,90€/mois
+  Couleur:  Vert menthe (#8AFFC1)
+  Features: 5
+  Stripe:   prod_TLfZ1muRLwGmQC ✅
+
+Plan Coach Synrgy Pro:
+  Prix:     29,90€/mois
+  Couleur:  Or premium (#FFD66B)
+  Features: 6
+  Stripe:   prod_TLfYI0nWTUy543 ✅
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DESIGN:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Cards:     backdrop-blur-md + bg-[#121418]/60
+Borders:   border-[couleur]/20
+Hover:     scale-[1.02] + brightness-110
+Animation: motion x: -20/+20 (smooth)
+Buttons:   gradient thématique (menthe/or)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TESTS À EFFECTUER:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Terminal 1: npm run dev:server (déjà actif)
+Terminal 2: npm run dev:client
+
+Browser: open http://localhost:5173
+
+Vérifier:
+  ✅ 2 cards pricing visibles
+  ✅ Prix: 9,90€ et 29,90€
+  ✅ Couleurs: menthe (client) / or (coach)
+  ✅ Glassmorphism visible (blur + transparence)
+  ✅ Hover animation fluide
+  ✅ Click button → redirect signup (si non connecté)
+  ✅ Aucun plan "Athlète"
+  ✅ Aucune erreur 401 dans console
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+VALIDATION:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[x] Section pricing remplacée
+[x] 2 plans (Client / Coach)
+[x] Prix officiels (9,90€ / 29,90€)
+[x] handleSelectPlan ajoutée
+[x] Auth safe (pas de 401)
+[x] Design glassmorphism
+[x] Animations motion
+[x] Couleurs thématiques
+[x] Buttons gradient
+[ ] Frontend testé visuellement
+[ ] Navigation plans testée
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ v4.4.3 Pricing Final Complete — Ready to Test
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

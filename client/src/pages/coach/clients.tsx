@@ -63,14 +63,14 @@ export default function CoachClients() {
         className="mb-8"
       >
         <div className="flex items-center justify-between mb-6">
-          <div>
+        <div>
             <h1 className="heading-1 flex items-center gap-3">
               <Users className="w-8 h-8 accent-text" />
               Mes Clients
-            </h1>
+          </h1>
             <p className="text-secondary mt-2">
               Gère tes clients et suis leur progression
-            </p>
+          </p>
           </div>
           
           <ProButton variant="primary" onClick={() => navigate('/coach/clients/new')}>
@@ -89,8 +89,8 @@ export default function CoachClients() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 rounded-xl bg-white/5 border border-white/10 focus:border-accent-color/30 outline-none transition-all"
-            />
-          </div>
+                />
+              </div>
           <ProButton variant="secondary">
             <Filter className="w-4 h-4 mr-2" />
             Filtres
@@ -179,7 +179,7 @@ export default function CoachClients() {
           <h3 className="heading-3 mb-2">Aucun client trouvé</h3>
           <p className="text-secondary mb-6">
             {searchQuery ? 'Essaye une autre recherche' : 'Commence par ajouter ton premier client'}
-          </p>
+            </p>
           {!searchQuery && (
             <ProButton variant="primary" onClick={() => navigate('/coach/clients/new')}>
               <Plus className="w-4 h-4 mr-2" />

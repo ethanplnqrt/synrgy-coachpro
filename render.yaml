@@ -1,0 +1,60 @@
+# Render.com Configuration for Synrgy Backend
+# https://render.com/docs/yaml-spec
+
+services:
+  # PostgreSQL Database
+  - type: pserv
+    name: synrgy-db
+    plan: starter
+    databaseName: synrgydb
+    user: synrgy_user
+    region: frankfurt
+    ipAllowList: []
+
+  # Backend API
+  - type: web
+    name: synrgy-api
+    runtime: node
+    plan: starter
+    region: frankfurt
+    buildCommand: npm ci && npx prisma generate && npm run build:server
+    startCommand: npm run start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      
+      - key: DATABASE_URL
+        fromDatabase:
+          name: synrgy-db
+          property: connectionString
+      
+      - key: JWT_SECRET
+        generateValue: true
+        
+      - key: FRONTEND_URL
+        value: https://synrgy.vercel.app
+      
+      - key: STRIPE_SECRET_KEY
+        sync: false  # Set manually in dashboard
+      
+      - key: STRIPE_PUBLIC_KEY
+        sync: false
+      
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      
+      - key: STRIPE_PRICE_CLIENT
+        sync: false
+      
+      - key: STRIPE_PRICE_COACH
+        sync: false
+      
+      - key: OLLAMA_URL
+        value: http://localhost:11434
+      
+      - key: OLLAMA_MODEL
+        value: llama3.2:3b
+    
+    autoDeploy: true
+

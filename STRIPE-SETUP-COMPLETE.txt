@@ -1,0 +1,143 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ SYNRGY v4.4.4 — STRIPE INTEGRATION COMPLÈTE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FICHIERS CRÉÉS:
+
+✅ server/routes/stripe.ts
+   → POST /api/stripe/checkout (create session)
+   → POST /api/stripe/webhook (handle events)
+   → GET /api/stripe/config (public key)
+
+✅ client/src/pages/checkout.tsx
+   → Auto-redirect to Stripe
+   → Error handling
+   → Loading state
+
+✅ STRIPE-INTEGRATION-V4.4.4.md
+   → Documentation complète
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FICHIERS MODIFIÉS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ server/index.ts
+   → Import stripeRouter
+   → Webhook route AVANT body parser
+   → Route /api/stripe/* ajoutée
+
+✅ client/src/App.tsx
+   → Import CheckoutPage
+   → Route /checkout ajoutée
+
+✅ client/src/pages/landing.tsx (v4.4.3)
+   → handleSelectPlan (auth safe)
+   → 2 plans (9,90€ / 29,90€)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONFIGURATION STRIPE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Variables .env:
+  ✅ STRIPE_SECRET_KEY (sk_test_...)
+  ✅ STRIPE_PUBLIC_KEY (pk_test_...)
+  ✅ STRIPE_WEBHOOK_SECRET (whsec_...)
+  ✅ STRIPE_PRICE_CLIENT (prod_TLfZ1muRLwGmQC) → 9,90€
+  ✅ STRIPE_PRICE_COACH (prod_TLfYI0nWTUy543) → 29,90€
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FLOW UTILISATEUR:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+NON CONNECTÉ:
+  Landing → Click "Choisir" → /signup?role=client
+  → Create account → Login → Dashboard
+
+CONNECTÉ:
+  Landing → Click "Choisir" → /checkout?plan=client
+  → Stripe Checkout → Payment → /subscription/success
+  → Webhook → Database updated
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ENDPOINTS API:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+POST /api/stripe/checkout
+  Body: { plan: "client"|"coach", userId, email }
+  Returns: { url: "https://checkout.stripe.com/..." }
+
+POST /api/stripe/webhook
+  Headers: stripe-signature
+  Body: Stripe event (raw)
+  Returns: { received: true }
+
+GET /api/stripe/config
+  Returns: { publicKey: "pk_test_..." }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TESTS À EFFECTUER:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Terminal 1: npm run dev:server
+Terminal 2: npm run dev:client
+
+Browser: http://localhost:5173
+
+Test Flow:
+  1. ✅ Landing page visible
+  2. ✅ Scroll to pricing (2 plans)
+  3. ✅ Click "Choisir cette formule" (non connecté)
+  4. ✅ Redirect → /signup?role=client
+  5. ✅ Create account
+  6. ✅ Login
+  7. ✅ Go back to landing
+  8. ✅ Click "Choisir cette formule" (connecté)
+  9. ✅ Redirect → /checkout?plan=client
+  10. ✅ Auto-redirect → Stripe checkout
+  11. ✅ Enter test card: 4242 4242 4242 4242
+  12. ✅ Complete payment
+  13. ✅ Redirect → /subscription/success
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TEST CARDS STRIPE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Success: 4242 4242 4242 4242 (any CVC, future date)
+Decline: 4000 0000 0000 0002
+3D Secure: 4000 0025 0000 3155
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+WEBHOOK TESTING (LOCAL):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Install Stripe CLI:
+  brew install stripe/stripe-cli/stripe
+  stripe login
+
+Forward webhooks:
+  stripe listen --forward-to localhost:5001/api/stripe/webhook
+  
+Trigger test:
+  stripe trigger checkout.session.completed
+
+Check logs:
+  ✅ Payment successful for user X (plan)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+VALIDATION:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[x] Routes Stripe créées (3 endpoints)
+[x] Page checkout créée
+[x] Routes ajoutées (server + client)
+[x] Variables .env configurées
+[x] handleSelectPlan (auth safe)
+[x] Webhook handling
+[ ] Tests flow complet
+[ ] Paiement test réussi
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ v4.4.4 Stripe Integration Ready — Test Flow Now
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

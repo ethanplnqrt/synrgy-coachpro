@@ -14,9 +14,10 @@ import { requireAuth } from "../auth/authMiddleware.js";
 import * as nutritionService from "../services/nutritionService.js";
 import * as macrosSyncService from "../services/macrosSyncService.js";
 import { getMacrosAuthURL, exchangeMacrosToken } from "../integrations/macros.js";
-import { db } from "../db.js";
-import { users } from "../../shared/schema.js";
-import { eq } from "drizzle-orm";
+// Legacy imports commented out (migrated to Prisma)
+// import { db } from "../db.js";
+// import { users } from "../../shared/schema.js";
+// import { eq } from "drizzle-orm";
 
 const router = express.Router();
 

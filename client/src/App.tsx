@@ -56,6 +56,7 @@ import Settings from "./pages/settings";
 import Subscription from "./pages/subscription";
 import SubscriptionSuccess from "./pages/subscription-success";
 import SubscriptionCancel from "./pages/subscription-cancel";
+import CheckoutPage from "./pages/checkout";
 
 /**
  * Protected Route Component
@@ -160,6 +161,7 @@ function AppRoutes() {
       <Route path="/client/settings" element={<ProtectedRoute component={Settings} allowedRole="client" />} />
 
       {/* Shared Routes */}
+      <Route path="/checkout" element={<CheckoutPage />} />
       <Route path="/subscription/success" element={<SubscriptionSuccess />} />
       <Route path="/subscription/cancel" element={<SubscriptionCancel />} />
 

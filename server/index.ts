@@ -34,9 +34,10 @@ import express from "express";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 
-import authRouter from "./auth/authRoutes.js";
+// Routes - Only import routes that exist
+import authPrismaRouter from "./routes/auth.js"; // Prisma + JWT auth
 import chatRouter from "./routes/chat.js";
-import nutritionRouter from "./routes/nutrition.js";
+// import nutritionRouter from "./routes/nutrition.js"; // Temporarily disabled for deployment
 import goalsRouter from "./routes/goals.js";
 import paymentsRouter from "./routes/payments.js";
 import subscriptionsRouter from "./routes/subscriptions.js";
@@ -44,27 +45,22 @@ import referralsRouter from "./routes/referrals.js";
 import plansRouter from "./routes/plans.js";
 import checkinsRouter from "./routes/checkins.js";
 import codexRouter from "./routes/codex.js";
-import programsRouter from "./routes/programs.js";
-import sessionsRouter from "./routes/sessions.js";
-import feedbacksRouter from "./routes/feedbacks.js";
-import messagesRouter from "./routes/messages.js";
-import aiRouter from "./routes/ai.js";
-import aiRoutesNew from "./routes/ai.js";
-import { loadDB } from "./utils/db.js";
+import stripeRouter from "./routes/stripe.js";
+// Services & Utils
+import { PrismaClient } from "@prisma/client";
 import { verifyReferralSystem } from "./services/referralService.js";
 import { initializeStripe, verifyStripeConfig } from "./utils/stripe.js";
+import { logStripeStatus } from "./services/stripeService.js";
+import { corsConfig } from "./middleware/security.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { apiLimiter, authLimiter } from "./middleware/rateLimiter.js";
-import { helmetConfig, corsConfig } from "./middleware/security.js";
 
 const app = express();
+const prisma = new PrismaClient();
 
 // Environment check
 const isProduction = process.env.NODE_ENV === 'production';
 console.log(`🚀 Mode: ${isProduction ? 'PRODUCTION' : 'DEVELOPMENT'}`);
-
-// Ensure database exists on startup
-loadDB();
 
 // Initialize Stripe with loaded env vars
 initializeStripe();
@@ -72,20 +68,28 @@ initializeStripe();
 // Verify Stripe configuration (after dotenv loaded)
 verifyStripeConfig();
 
-// Log Stripe status with detailed verification
-import { logStripeStatus } from "./services/stripeService.js";
+// Log Stripe status
 logStripeStatus().catch(err => {
   console.error('⚠️  Stripe verification failed:', err.message);
 });
+
+// Connect to Prisma
+(async () => {
+  try {
+    await prisma.$connect();
+    console.log("✅ Connected to PostgreSQL via Prisma");
+  } catch (err) {
+    console.error("❌ Prisma connection failed:", err);
+  }
+})();
 
 // Verify referral system on startup
 verifyReferralSystem().catch(console.error);
 
 // Security middleware
-app.use(helmetConfig);
 app.use(corsConfig);
 
-// Rate limiting on all API routes (disabled in development)
+// Rate limiting (disabled in development)
 if (process.env.NODE_ENV === 'production') {
   app.use('/api/', apiLimiter);
   console.log("✅ Rate limiting enabled (production mode)");
@@ -93,20 +97,18 @@ if (process.env.NODE_ENV === 'production') {
   console.log("⚠️  Rate limiting disabled (development mode)");
 }
 
-// Webhook route needs raw body for Stripe signature verification
-app.use("/api/payments/webhook", bodyParser.raw({ type: "application/json" }));
+// Stripe webhook (must be before body parser)
+app.use("/api/stripe/webhook", stripeRouter);
 
-app.use(bodyParser.json({ limit: '10mb' }));
-app.use(cookieParser({
-  httpOnly: true,
-  secure: isProduction,
-  sameSite: 'strict',
-}));
+// Body parsing
+app.use(express.json({ limit: '10mb' }));
+app.use(cookieParser());
 
-// API routes (priority)
-app.use("/api/auth", authLimiter, authRouter);
+// API routes
+app.use("/api/auth", authLimiter, authPrismaRouter);
+app.use("/api/stripe", stripeRouter);
 app.use("/api/chat", chatRouter);
-app.use("/api/nutrition", nutritionRouter);
+// app.use("/api/nutrition", nutritionRouter); // Temporarily disabled for deployment
 app.use("/api/goals", goalsRouter);
 app.use("/api/payments", paymentsRouter);
 app.use("/api/subscriptions", subscriptionsRouter);
@@ -114,17 +116,13 @@ app.use("/api/referrals", referralsRouter);
 app.use("/api/plans", plansRouter);
 app.use("/api/checkins", checkinsRouter);
 app.use("/api/codex", codexRouter);
-app.use("/api/programs", programsRouter);
-app.use("/api/sessions", sessionsRouter);
-app.use("/api/feedbacks", feedbacksRouter);
-app.use("/api/messages", messagesRouter);
-app.use("/api/ai", aiRouter);
 
 app.get("/api/health", (_req, res) =>
   res.json({ 
+    ok: true,
     status: "ok", 
     mode: isProduction ? "production" : "development", 
-    version: "4.0.0",
+    version: process.env.npm_package_version || "4.4.4",
     timestamp: new Date().toISOString(),
   })
 );
@@ -146,6 +144,7 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 5001;
 
 app.listen(PORT, () => {
-  console.log(`✅ Synrgy ${isProduction ? 'PRODUCTION' : 'DEV'} live on http://localhost:${PORT}`);
+  console.log(`✅ Synrgy backend démarré - routes chargées avec succès`);
+  console.log(`🚀 Synrgy ${isProduction ? 'PRODUCTION' : 'DEV'} live on http://localhost:${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
 });

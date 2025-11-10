@@ -17,6 +17,25 @@ export default function Landing() {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
+  // Handle plan selection (avoid 401 on public page)
+  const handleSelectPlan = (plan: 'client' | 'coach') => {
+    try {
+      // Check if user is logged in
+      const token = document.cookie.split(';').find(c => c.trim().startsWith('synrgy_token='));
+      
+      if (!token) {
+        // Not logged in → redirect to signup with role
+        navigate(`/signup?role=${plan}`);
+      } else {
+        // Logged in → redirect to checkout
+        navigate(`/checkout?plan=${plan}`);
+      }
+    } catch (e) {
+      console.error("Plan selection error:", e);
+      navigate(`/signup?role=${plan}`);
+    }
+  };
+
   const features = [
     {
       icon: Dumbbell,
@@ -170,94 +189,79 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-6">
+      {/* Pricing Section - Premium Glassmorphism */}
+      <section className="py-20 bg-[#0D1117] text-white">
+        <div className="max-w-6xl mx-auto px-6 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="text-center mb-16"
+            className="mb-16"
           >
-            <h2 className="text-3xl md:text-4xl font-light text-gradient-gold mb-4 uppercase tracking-wider">
-              {t('landing.pricing.title')}
-            </h2>
-            <p className="text-text-secondary text-lg">
-              {t('landing.pricing.subtitle')}
+            <h2 className="text-4xl font-bold mb-4 text-gradient-gold">Choisis ta formule Synrgy</h2>
+            <p className="text-gray-400 text-lg">
+              Paiement sécurisé via Stripe — 100% protégé, sans engagement.
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            {/* Coach Plan */}
-            <AnimatedCard delay={0.2}>
-              <div className="text-center p-8">
-                <div className="mb-6">
-                  <Users className="w-12 h-12 text-primary mx-auto mb-4" strokeWidth={1.5} />
-                  <h3 className="text-2xl font-medium mb-2">{t('landing.pricing.coach.title')}</h3>
-                  <p className="text-text-secondary">{t('landing.pricing.coach.subtitle')}</p>
-                </div>
-                <div className="mb-8">
-                  <span className="text-5xl font-light text-gradient-gold">{t('landing.pricing.coach.price')}</span>
-                  <span className="text-text-secondary">{t('landing.pricing.coach.period')}</span>
-                </div>
-                <ul className="space-y-3 mb-8 text-left">
-                  <li className="flex items-center gap-2 text-text-secondary">
-                    <span className="text-primary">✓</span> {t('landing.pricing.coach.features.clients')}
-                  </li>
-                  <li className="flex items-center gap-2 text-text-secondary">
-                    <span className="text-primary">✓</span> {t('landing.pricing.coach.features.builder')}
-                  </li>
-                  <li className="flex items-center gap-2 text-text-secondary">
-                    <span className="text-primary">✓</span> {t('landing.pricing.coach.features.insights')}
-                  </li>
-                  <li className="flex items-center gap-2 text-text-secondary">
-                    <span className="text-primary">✓</span> {t('landing.pricing.coach.features.earnings')}
-                  </li>
-                </ul>
-                <GlowButton
-                  onClick={() => navigate('/signup?role=coach')}
-                  className="w-full"
-                >
-                  {t('landing.pricing.coach.cta')}
-                </GlowButton>
-              </div>
-            </AnimatedCard>
+          <div className="grid md:grid-cols-2 gap-10">
+            {/* FORMULE CLIENT */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="rounded-2xl border border-[#8AFFC1]/20 p-10 bg-[#121418]/60 backdrop-blur-md hover:scale-[1.02] transition-all duration-300"
+            >
+              <div className="text-3xl mb-4 font-semibold text-[#8AFFC1]">Client Synrgy</div>
+              <p className="text-5xl font-bold mb-6">
+                9<span className="text-2xl align-top">,90€</span>
+                <span className="text-xl font-light">/mois</span>
+              </p>
+              <ul className="space-y-3 text-gray-300 text-left mb-8">
+                <li>✅ Coaching IA personnalisé</li>
+                <li>✅ Programme d'entraînement intelligent</li>
+                <li>✅ Plan nutrition interactif</li>
+                <li>✅ Chat IA + suivi automatisé</li>
+                <li>✅ Progression mesurée par SynrgyScore™</li>
+              </ul>
+              <button
+                onClick={() => handleSelectPlan('client')}
+                className="w-full bg-gradient-to-r from-[#8AFFC1] to-[#52D6A0] text-black font-semibold py-3 rounded-xl hover:brightness-110 transition-all"
+              >
+                Choisir cette formule
+              </button>
+            </motion.div>
 
-            {/* Client Plan */}
-            <AnimatedCard delay={0.3}>
-              <div className="text-center p-8">
-                <div className="mb-6">
-                  <Dumbbell className="w-12 h-12 text-success mx-auto mb-4" strokeWidth={1.5} />
-                  <h3 className="text-2xl font-medium mb-2">{t('landing.pricing.client.title')}</h3>
-                  <p className="text-text-secondary">{t('landing.pricing.client.subtitle')}</p>
-                </div>
-                <div className="mb-8">
-                  <span className="text-5xl font-light text-success">{t('landing.pricing.client.price')}</span>
-                  <span className="text-text-secondary">{t('landing.pricing.client.period')}</span>
-                </div>
-                <ul className="space-y-3 mb-8 text-left">
-                  <li className="flex items-center gap-2 text-text-secondary">
-                    <span className="text-success">✓</span> {t('landing.pricing.client.features.logging')}
-                  </li>
-                  <li className="flex items-center gap-2 text-text-secondary">
-                    <span className="text-success">✓</span> {t('landing.pricing.client.features.sync')}
-                  </li>
-                  <li className="flex items-center gap-2 text-text-secondary">
-                    <span className="text-success">✓</span> {t('landing.pricing.client.features.ai')}
-                  </li>
-                  <li className="flex items-center gap-2 text-text-secondary">
-                    <span className="text-success">✓</span> {t('landing.pricing.client.features.discount')}
-                  </li>
-                </ul>
-                <GlowButton
-                  onClick={() => navigate('/signup?role=client')}
-                  className="w-full bg-success hover:bg-success/90"
-                >
-                  {t('landing.pricing.client.cta')}
-                </GlowButton>
-              </div>
-            </AnimatedCard>
+            {/* FORMULE COACH */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="rounded-2xl border border-[#FFD66B]/20 p-10 bg-[#121418]/60 backdrop-blur-md hover:scale-[1.02] transition-all duration-300"
+            >
+              <div className="text-3xl mb-4 font-semibold text-[#FFD66B]">Coach Synrgy Pro</div>
+              <p className="text-5xl font-bold mb-6">
+                29<span className="text-2xl align-top">,90€</span>
+                <span className="text-xl font-light">/mois</span>
+              </p>
+              <ul className="space-y-3 text-gray-300 text-left mb-8">
+                <li>✅ Tableau de bord IA complet</li>
+                <li>✅ Gestion illimitée de clients</li>
+                <li>✅ Génération automatique de programmes</li>
+                <li>✅ SynrgyScore™ en temps réel</li>
+                <li>✅ Alertes et analytics IA</li>
+                <li>✅ Support prioritaire + API</li>
+              </ul>
+              <button
+                onClick={() => handleSelectPlan('coach')}
+                className="w-full bg-gradient-to-r from-[#FFD66B] to-[#CBA24A] text-black font-semibold py-3 rounded-xl hover:brightness-110 transition-all"
+              >
+                Choisir cette formule
+              </button>
+            </motion.div>
           </div>
         </div>
       </section>
